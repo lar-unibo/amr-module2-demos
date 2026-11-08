@@ -1,0 +1,31 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">Perspective projection</p>
+    <p>A camera turns the 3-D world into a 2-D image. With the image plane at <span class="tex">z=f</span> and the camera frame <span class="tex">\{C\}</span> with <span class="tex">z</span> along the optical axis, similar triangles give</p>
+    <div class="tex-block">x=f\,\frac{X}{Z},\qquad y=f\,\frac{Y}{Z}</div>
+    <p>or, in homogeneous coordinates,</p>
+    <div class="tex-block">\tilde{\vp}=\begin{bmatrix}f&0&0&0\\0&f&0&0\\0&0&1&0\end{bmatrix}\tilde{\vP}_C .</div>
+    <p>With <span class="tex">f=1</span> the coordinates are the <b>normalized</b> image coordinates.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Extrinsics</p>
+    <p>The camera has an arbitrary pose with respect to the world frame <span class="tex">\{0\}</span>. A world point is first expressed in the camera frame, <span class="tex">\tilde{\vP}_C={}^C\vT_0\,\tilde{\vP}_0</span>: <span class="tex">{}^C\vT_0</span> contains the <b>extrinsic</b> parameters (shown on the right). Move the camera and watch it change.</p>
+    <p><b>Try:</b> change the focal length. The image grows and the field of view shrinks, as when zooming; the extrinsics do not change.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">The depth is lost</p>
+    <p>Every point of a projection ray lands on the same image point.</p>
+    <p><b>Try:</b> move the selected point along its ray (red, dashed): it moves in 3-D, not in the image. Then scale the whole scene about the camera: a house twice as big and twice as far away gives exactly the same image. From one image alone we cannot tell size from distance.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Thin lenses</p>
+    <p>A lens gathers more light than a pinhole. A thin lens forms the image of an object at distance <span class="tex">z_o</span> at distance <span class="tex">z_i</span>, with <span class="tex">\frac{1}{z_o}+\frac{1}{z_i}=\frac{1}{f}</span> (bottom cards). The image is where the rays from the tip of the object meet again: the ray parallel to the axis bends through <span class="tex">F'</span>, the ray through the centre goes straight, the ray through <span class="tex">F</span> leaves parallel.</p>
+    <p><b>Try:</b> start just above <span class="tex">f</span>: the image is far behind the lens and large. At <span class="tex">z_o=2f</span> it is at <span class="tex">2F'</span>, same size. Move the object away: the image moves to <span class="tex">F'</span> and shrinks (<span class="tex">z_i\to f</span>, right plot). With <span class="tex">f=4</span> mm, an object at 0.5 m gives <span class="tex">z_i-f\approx 0.03</span> mm, so the image plane is practically at <span class="tex">z=f</span>: the central-projection model. Below <span class="tex">f</span> the rays diverge and there is no real image.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 1, slides 13–18. Sensor of 640 × 480 pixels of 5 µm (3.2 × 2.4 mm). The world frame has <span class="tex">z</span> up; the camera frame has <span class="tex">z</span> along the optical axis, <span class="tex">x</span> to the right and <span class="tex">y</span> down. In the 3-D view the image plane is drawn enlarged, in front of the camera.</p>
+</details>

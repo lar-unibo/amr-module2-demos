@@ -1,0 +1,33 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">The global condition</p>
+    <p>With <span class="tex">\mathcal V=\tfrac12\norm{\ve}^2</span> and <span class="tex">\vv_c=-\lambda\Lhp\ve</span>, <span class="tex">\dot{\mathcal V}=-\lambda\,\ve^{T}\vL\Lhp\ve</span>. Global asymptotic stability needs <span class="tex">\vL\Lhp>0</span>.</p>
+    <p>With four points this <span class="tex">8\times8</span> matrix has rank at most 6: the card on the right always shows <b>two zero eigenvalues</b>. Two directions of the error are invisible to the controller, so the global condition can never hold.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">The error the controller acts on</p>
+    <p>The controller only uses <span class="tex">\ve'=\Lhp\ve\in\R^6</span>: <span class="tex">\vv_c=-\lambda\ve'</span>. With <span class="tex">\Lhp</span> constant,</p>
+    <div class="tex-block">\dot{\ve}'=\Lhp\dot{\ve}=\Lhp\vL\,\vv_c=-\lambda\,\Lhp\vL\,\ve',</div>
+    <p>and <span class="tex">\Lhp\vL</span> is only <span class="tex">6\times6</span>: if it is positive definite, <span class="tex">\ve'\to\mathbf 0</span>, and near the goal also <span class="tex">\ve\to\mathbf 0</span>. Its smallest eigenvalue is plotted bottom right; with <span class="tex">\vL(\vs)</span> and true depths it is exactly 1.</p>
+    <p><b>Try:</b> <span class="tex">\vL(\vs^{*})</span> from <em>1 rad about z</em>: the eigenvalue dips well below zero along the way, yet the run converges. The condition is sufficient, not necessary, and only local. From <em>large tilt</em>, <span class="tex">\vL(\vs^{*})</span> fails: the points pass behind the camera.</p>
+    <p>A constant <span class="tex">\hat Z</span> only scales the translation part: at the goal, <span class="tex">\Lhp\vL=\operatorname{diag}(\tfrac{\hat Z}{Z}\vI_3,\vI_3)</span> exactly (slide 39), positive for any <span class="tex">\hat Z>0</span>. With <span class="tex">\hat Z=0.1</span> the eigenvalue stays small but positive along the way, and the run is just slow.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Positive is a local guarantee</p>
+    <p>If <span class="tex">\Lhp\vL>0</span> <b>at the goal</b>, IBVS converges from a neighbourhood of the goal; how large that neighbourhood is, the theorem does not say (in practice it is often large). Far from the goal, a positive eigenvalue only says that <span class="tex">\norm{\ve'}</span> shrinks at that instant, and even that exactly only for a constant <span class="tex">\Lhp</span>.</p>
+    <p><b>Try:</b> <em>π rad about z</em> with <span class="tex">\vL(\vs)</span> and true <span class="tex">Z</span>. The eigenvalue is exactly 1 all along, yet the camera is lost to infinity and the dashed <span class="tex">\norm{\ve'}</span> grows: as the camera retreats, <span class="tex">\Lhp</span> changes so fast that the term neglected on slide 39 dominates.</p>
+    <p>The unreachable target of the next section is a second case: the eigenvalue stays at 1 and <span class="tex">\ve'\to\mathbf 0</span>, yet the camera stops with <span class="tex">\ve\neq\mathbf 0</span>. Far from the goal, <span class="tex">\ve'=\mathbf 0</span> does not imply <span class="tex">\ve=\mathbf 0</span>.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">An unreachable target is not a local minimum</p>
+    <p><b>Try:</b> <em>Make the target unreachable</em>, or drag desired point 1, even slightly. Four points give 8 numbers, but the camera has only 6 degrees of freedom: the images it can produce form a 6-dimensional family, and a desired image edited by hand almost never belongs to it. <b>No pose</b> gives <span class="tex">\ve=\mathbf 0</span>.</p>
+    <p>IBVS then does the best it can. It moves until <span class="tex">\ve'=\mathbf 0</span> and stops with <span class="tex">\ve\neq\mathbf 0</span>: the remaining error lies in <span class="tex">\Null(\Lhp)</span>, outside <span class="tex">\Range(\vL)</span> (on the plot, the dashed <span class="tex">\norm{\ve'}</span> goes to zero while <span class="tex">\norm{\ve}</span> stays). The readouts show that this final error equals the <b>smallest error any pose can reach</b>: the camera stops at the best fit, spread over the four points. This is not a local minimum.</p>
+    <p>A <b>local minimum</b> is different: the target is reachable (some pose gives <span class="tex">\ve=\mathbf 0</span>), but the camera gets stuck elsewhere with <span class="tex">\ve\neq\mathbf 0</span>. For four points in a square these are rare (we found none in several thousand random starts); Chaumette and Hutchinson show one in their Fig. 9. In practice <span class="tex">\vs^{*}</span> is recorded from an image taken at the goal, so it is reachable by construction.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 2, slides 38–39; Chaumette &amp; Hutchinson (2006), pp. 87–89. Square target of side 0.6 m, desired camera 1 m in front of it. The eigenvalues are those of the symmetric parts <span class="tex">\tfrac12(\mathbf M+\mathbf M^{T})</span>, at the time selected with the slider.</p>
+</details>

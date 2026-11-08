@@ -1,0 +1,34 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">From camera motion to image motion</p>
+    <p>A static point <span class="tex">\vP=(X,Y,Z)</span>, in the frame of a camera that moves with <span class="tex">\vv_c=(\nu_c,\omega_c)</span>, has velocity <span class="tex">\dot{\vP}=-\nu_c-\omega_c\times\vP</span>. Its normalized image coordinates <span class="tex">x=X/Z</span>, <span class="tex">y=Y/Z</span> then move as</p>
+    <div class="tex-block">\begin{aligned}
+        \dot{\vs}=\vL_p\,\vv_c
+        &=\underbrace{\begin{bmatrix}-\frac1Z&0&\frac xZ\\[2pt]0&-\frac1Z&\frac yZ\end{bmatrix}}_{\text{translation}}\nu_c\\[4pt]
+        &+\underbrace{\begin{bmatrix}xy&-(1+x^2)&y\\[2pt]1+y^2&-xy&-x\end{bmatrix}}_{\text{rotation}}\omega_c
+        \end{aligned}</div>
+    <p>The left view shows the camera, the point, and the camera after a time <span class="tex">T</span> at constant velocity; the right view shows what the camera sees.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">The depth matters only for translation</p>
+    <p>The first three columns, for <span class="tex">\nu_c</span>, scale with <span class="tex">1/Z</span>: far points move less in the image. The last three, for <span class="tex">\omega_c</span>, do not depend on <span class="tex">Z</span> at all. This is why IBVS needs an estimate of the depth, and why a wrong estimate mostly changes the speed of the translation.</p>
+    <p><b>Try:</b> choose <em>sideways</em>, then move the depth slider. Predict what happens to the orange arrow, then check. Repeat with <em>pan</em>: what happens to the violet arrow?</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Invisible camera motions</p>
+    <p><span class="tex">\vL_p</span> is <span class="tex">2\times6</span> with rank 2, so it has a 4-dimensional null space: camera motions that, to first order, do not move the point. Two of them are easy to picture: translating along the projection ray, and rotating about it. Both keep the point exactly still, for any duration.</p>
+    <p><b>Try:</b> <em>along the ray</em> and <em>about the ray</em>, then a <em>random</em> motion in <span class="tex">\Null(\vL_p)</span>. The random one starts with <span class="tex">\dot{\vs}=0</span>, but the point slowly drifts: <span class="tex">\vL_p</span> changes as the camera moves, so the null space is only an instantaneous property. Increase <span class="tex">T</span> to see the drift grow (it starts quadratically in time).</p>
+    <p>With several points, the null spaces intersect. Four points in general position leave no invisible motion, which is why IBVS uses at least four.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">A first-order model</p>
+    <p>The dashed line is the prediction <span class="tex">\vs+\dot{\vs}\,t</span> with <span class="tex">\vL_p</span> frozen at <span class="tex">t=0</span>. It is exact for a sideways translation, where <span class="tex">Z</span> stays constant, but a forward motion or a rotation bends the true path away from it as <span class="tex">T</span> grows.</p>
+    <p>A visual servo does not rely on a long prediction: it measures the features again at every frame and recomputes <span class="tex">\vL_p</span>, so only the short-term prediction matters.</p>
+</section>
+
+<details>
+    <summary>Slides and conventions</summary>
+    <p>Lecture 2, slides 25–29 (setup, projection, point motion, pixels, properties). Camera frame: <span class="tex">x</span> right, <span class="tex">y</span> down, <span class="tex">z</span> along the optical axis; image plane at <span class="tex">f=1</span>. Velocities are expressed in the camera frame, linear part first.</p>
+</details>

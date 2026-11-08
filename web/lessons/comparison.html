@@ -1,0 +1,25 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">Same task, two controllers</p>
+    <p>Both controllers start from the same pose, with the same camera. PBVS (orange) controls the camera in 3-D: a straight camera path, but curved image paths. IBVS (green) controls the image: nearly straight image paths, but a 3-D path that nobody chose.</p>
+    <p><b>Try:</b> <em>large tilt</em>: the PBVS points leave the image (bottom-right plot above 1), the IBVS points do not.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Calibration errors</p>
+    <p>The camera measures pixels. Both controllers convert them to normalized coordinates with the intrinsics they <em>believe</em>, <span class="tex">\hat{\mathbf K}</span>.</p>
+    <ul>
+        <li><b>IBVS</b> compares the current image with the desired image, taken by the same camera at the goal. Both go through the same <span class="tex">\hat{\mathbf K}</span>, so <span class="tex">\ve=\mathbf 0</span> exactly at the true goal: the calibration error changes the path, not the result.</li>
+        <li><b>PBVS</b> estimates the pose of the target with <span class="tex">\hat{\mathbf K}</span>. The estimate (dashed violet camera) is biased, and the camera stops where the <em>estimate</em> reads the desired pose.</li>
+    </ul>
+    <p><b>Try:</b> a focal length error of +10%: IBVS still reaches the goal, PBVS stops several centimetres away. Then add image noise: near the goal both cameras jitter by about the same amount (around 1 mm per pixel of noise here). Noise causes jitter; a calibration error causes a bias, and only PBVS suffers from it.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Complementary</p>
+    <p>Each scheme controls what the other leaves free: the 3-D path for PBVS, the image for IBVS. PBVS needs a correct pose, hence a good calibration and model; IBVS is robust to them, but can retreat or meet singularities. Hybrid schemes (2½-D visual servoing) combine the two.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 2, slide 35 and the summary. True camera: f = 4 mm, 5 µm pixels, principal point (320, 240). PBVS estimates the pose of the planar target from its homography, refined by Gauss–Newton on the reprojection error. The final error is averaged over the last 20 steps. Period 0.04 s.</p>
+</details>

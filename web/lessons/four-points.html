@@ -1,0 +1,22 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">Three points are not enough</p>
+    <p>The image of three points fixes only the directions of the three viewing rays, hence the <b>angles between them</b>. Finding the camera poses that see a known triangle under those angles is the perspective-3-point problem (P3P): it has up to <b>four</b> solutions.</p>
+    <p>The left view shows them for the triangle of slide 30, with pose 1 (the desired one) 1 m above its centre. Seen from any solution, points 1–3 fall on <em>exactly</em> the same pixels (difference around <span class="tex">10^{-15}</span>).</p>
+    <p><b>Try:</b> select pose 2: it is 25 cm above the table, beyond point 1, looking back. Then move pose 1 with the sliders: the solutions move, and their number can change.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">What IBVS does with three points</p>
+    <p>With three points, <span class="tex">\vs\in\R^6</span> and <span class="tex">\vL</span> is <span class="tex">6\times6</span>. The error is zero at every P3P solution, so IBVS can stop at a <b>wrong pose</b> with <span class="tex">\ve=\mathbf 0</span>.</p>
+    <p><b>Try:</b> select a solution other than pose 1 and press <b>Play</b>. Both runs start near that solution. With 3 points (orange) the camera settles on the wrong pose, with zero error. With 4 points (green) it goes to pose 1.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">A fourth point</p>
+    <p>Point 4, at the centre of the triangle, is seen at a different place from every wrong solution (the red ring in the image). Adding it to the features removes the ambiguity. This is why IBVS uses at least four points, as on the next slides.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 2, slide 30. Triangle with vertices <span class="tex">(0,0.577)</span>, <span class="tex">(\pm0.5,-0.289)</span> on the table (<span class="tex">z=0</span>, z up). The P3P solutions come from the law of cosines for the three sides: one distance is scanned and the others follow, with every sign change refined by bisection; each solution gives the pose by the Kabsch method.</p>
+</details>

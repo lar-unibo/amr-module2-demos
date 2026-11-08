@@ -1,0 +1,33 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">The idea</p>
+    <p>One camera sees a point along a ray, but not how far along it: the depth is lost. Two cameras see it along <b>two rays</b>, and the point is where the rays meet. In the top view (left), drag the red point: the two dashed rays follow it.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Disparity</p>
+    <p>In <b>normal stereo</b> the two cameras are identical, with parallel optical axes, and the right one is shifted by the <b>baseline</b> <span class="tex">b</span> along <span class="tex">x</span>. A point then appears on the <b>same row</b> of both images (the epipolar line), shifted by the <b>disparity</b> <span class="tex">d=u_L-u_R</span> (the orange arrow, right). Similar triangles give</p>
+    <div class="tex-block">Z=\frac{b\,f'}{d},\qquad f'=\frac{f}{\rho_w}</div>
+    <p>with <span class="tex">f'</span> the focal length in pixels.</p>
+    <p><b>Try:</b> drag the point up, away from the cameras: the rays become almost parallel and the disparity shrinks like <span class="tex">1/Z</span>. Bring it close: large disparity. Move it sideways: both image points move, the disparity does not change.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Only some depths are possible</p>
+    <p>The disparity is measured by matching pixels, so it comes in whole pixels (or fractions of a pixel, with sub-pixel matching). Each value of <span class="tex">d</span> gives one depth: the camera can only report the depths of the dashed lines in the top view, and the measured point (red ring) jumps from line to line.</p>
+    <p>The lines are dense near the cameras and sparse far away. One disparity step changes the depth by about</p>
+    <div class="tex-block">\Delta Z\approx\frac{Z^2}{b\,f'}\,\Delta d,</div>
+    <p>so the depth error grows like <span class="tex">Z^2</span>: about 11 cm at 3 m, more than 1.5 m at 12 m with the default camera.</p>
+    <p><b>Try:</b> increase the baseline or the focal length: the lines get denser and the depth more precise. Switch to <em>1/4 pixel</em>: four times denser.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">From pixels to 3-D points</p>
+    <p>Once the depth is known (from stereo, structured light or time of flight), a pixel <span class="tex">(u,v)</span> gives the 3-D point in the camera frame:</p>
+    <div class="tex-block">\vP_C=Z\,\vK^{-1}\begin{bmatrix}u\\v\\1\end{bmatrix},\quad X=Z\,\frac{u-u_0}{f/\rho_w},\quad Y=Z\,\frac{v-v_0}{f/\rho_h}</div>
+    <p>The card on the right does this with the depth measured by the stereo pair. The hard part in practice is not this formula but the <b>correspondence problem</b>: finding the same point in both images, which fails on textureless surfaces.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 1, slides 41–44. Images 640 × 480 pixels, principal point (320, 240); default baseline 12 cm and <span class="tex">f'=700</span> pixels. The correspondence is assumed found: only the disparity is quantized and perturbed. In the top view the horizontal axis is stretched, so that the baseline is visible next to a 15 m deep scene.</p>
+</details>

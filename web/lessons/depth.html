@@ -1,0 +1,29 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">The depth is usually not known</p>
+    <p>The translation columns of <span class="tex">\vL_p</span> contain <span class="tex">1/Z</span>, the depth of each point. A single camera does not measure it. Three options:</p>
+    <ol>
+        <li>a 3-D camera (stereo, time of flight, structured light): the <b>true depths</b>;</li>
+        <li>a <b>constant guess</b> <span class="tex">\hat Z</span> for every point;</li>
+        <li>an <b>online estimate</b> from the measured camera and image motion.</li>
+    </ol>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">A wrong constant guess</p>
+    <p>The scene of slide 33: the true depth at the goal is <span class="tex">Z=3</span> m. With <span class="tex">\hat Z</span> in place of <span class="tex">Z</span>, the commanded translation is roughly scaled by <span class="tex">\hat Z/Z</span>; near the goal, <span class="tex">\Lhp\vL=\operatorname{diag}(\tfrac{\hat Z}{Z}\vI_3,\vI_3)</span> exactly.</p>
+    <p><b>Try:</b> <span class="tex">\hat Z=3</span>, then <span class="tex">\hat Z=1</span>: about three times slower. Then <span class="tex">\hat Z=10</span>: translation velocities about <span class="tex">10/3</span> times larger. All converge, and the final pose is just as accurate: a coarse depth perturbs the trajectory, not the result.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Estimating the depth online</p>
+    <p>Split <span class="tex">\vL_p</span> into its translation and rotation parts. With the camera velocity known and the image velocity measured, each point gives a linear equation in <span class="tex">\phi=1/Z</span>:</p>
+    <div class="tex-block">\underbrace{(\vL_\nu\,\nu_c)}_{\mathbf A}\;\phi=\underbrace{\dot{\vs}-\vL_\omega\,\omega_c}_{\mathbf b}
+        \quad\Rightarrow\quad \phi=\frac{\mathbf A^{T}\mathbf b}{\mathbf A^{T}\mathbf A}.</div>
+    <p><b>Try:</b> <em>online estimate</em> starting from <span class="tex">\hat Z_0=1</span>: after the first motion, the dashed estimates join the true depths (bottom-right plot), and the run behaves like the one with true depths.</p>
+    <p>The estimate needs translation: without <span class="tex">\nu_c</span>, <span class="tex">\mathbf A=\mathbf 0</span> and the depth is unobservable (the estimate is then kept).</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 2, slides 33–34. Square target of side 1.8 m, desired camera 3 m in front of it; the image velocity is measured by finite differences between two frames (period 0.04 s) and paired with the velocity commanded between them.</p>
+</details>

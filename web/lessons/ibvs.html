@@ -1,0 +1,30 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">The control law</p>
+    <p>Four image points give <span class="tex">\vs\in\R^8</span>. Stacking their interaction matrices gives <span class="tex">\vL\in\R^{8\times6}</span>, and asking for an exponential decrease of the error, <span class="tex">\dot{\ve}=-\lambda\ve</span>, gives</p>
+    <div class="tex-block">\vv_c=-\lambda\,\Lhp\,(\vs-\vs^{*}).</div>
+    <p>Press <b>Play</b>: the red points move to the blue ones along nearly straight lines in the image. The paths are straight only to first order: <span class="tex">\vL\vL^{+}</span> is a projection, so the part of the error that the camera cannot produce is left aside.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Which interaction matrix?</p>
+    <p><span class="tex">\vL</span> depends on the features and on the depths, which change during the motion. Three common choices:</p>
+    <ul>
+        <li><span class="tex">\vL(\vs)</span>, at the current features: computed at every frame;</li>
+        <li><span class="tex">\vL(\vs^{*})</span>, at the desired features: constant, computed once;</li>
+        <li>their mean <span class="tex">\tfrac12(\vL(\vs)+\vL(\vs^{*}))</span>.</li>
+    </ul>
+    <p>From a general start, all three converge, with different camera paths.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Rotations about the optical axis</p>
+    <p>The ideal motion is a pure rotation. Straight lines in the image ask for something else: the points move toward the image centre and back out, which the camera produces by translating along its axis.</p>
+    <p><b>Try:</b> <em>1 rad about z</em> with <span class="tex">\vL(\vs)</span>: the camera <b>retreats</b> and comes back (bottom-right plot). With <em>2.8 rad about z</em> the retreat is several metres. With <em>π rad about z</em> the straight paths all cross the image centre: the camera retreats to infinity.</p>
+    <p>Then switch to <span class="tex">\vL(\vs^{*})</span>: the camera <b>advances</b> instead, and for large angles the points pass behind it. The <b>mean</b> gives a pure rotation for every angle below π; at exactly π it stops, in a singular configuration.</p>
+    <p>Straight lines in the image are not a sensible 3-D motion: IBVS controls the image, not the camera path.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 2, slides 31–32 (feature motion, control law) and 36 (IBVS issues). Square target of side 0.6 m, desired camera 1 m in front of it, true depths in <span class="tex">\vL</span>; period 0.04 s. The run stops when a point reaches the camera plane or the camera is 30 m away.</p>
+</details>

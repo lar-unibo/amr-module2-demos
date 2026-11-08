@@ -1,0 +1,37 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">Geometric distortion</p>
+    <p>Real lenses do not follow the central-projection model exactly. The most important effect for robotics is geometric distortion: straight lines in the scene become curved in the image. It has two parts:</p>
+    <ul>
+        <li><b>radial</b>: points move along lines through the principal point, by an amount that grows with the distance <span class="tex">r</span> from it;</li>
+        <li><b>tangential</b> (decentring): the lens is not centred over the sensor or not parallel to it, so the image looks slightly tilted or stretched.</li>
+    </ul>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">The model</p>
+    <p>With five parameters <span class="tex">D=(k_1,k_2,k_3,p_1,p_2)</span>, considered additional intrinsic parameters:</p>
+    <div class="tex-block">\begin{aligned}
+        x_d &= x\,(1+k_1r^2+k_2r^4+k_3r^6) + \delta_x\\
+        y_d &= y\,(1+k_1r^2+k_2r^4+k_3r^6) + \delta_y
+    \end{aligned}</div>
+    <div class="tex-block">\begin{aligned}
+        \delta_x &= 2p_1xy + p_2(r^2+2x^2)\\
+        \delta_y &= p_1(r^2+2y^2) + 2p_2xy
+    \end{aligned}</div>
+    <p>Here <span class="tex">(x,y)</span> are <b>normalized</b> image coordinates (image plane at <span class="tex">f=1</span>, centred on the principal point), as in OpenCV; the pixels then follow from <span class="tex">\vK</span>. Slide 28 writes the same formulas with <span class="tex">(u,v)</span>; measured in pixels from the principal point, the coefficients are much smaller.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Try</p>
+    <ul>
+        <li><em>barrel</em> (<span class="tex">k_1&lt;0</span>): the corners move inward, typical of wide-angle lenses. <em>pincushion</em> (<span class="tex">k_1&gt;0</span>): outward, typical of telephoto lenses.</li>
+        <li>The arrows are nearly zero at the centre and largest at the corners: to leading order the radial displacement grows like <span class="tex">r^3</span>. With <em>barrel</em>, a corner moves by about 27 pixels, a point at half that distance from the centre by under 4.</li>
+        <li><em>tangential</em>: the displacement is no longer along radial lines.</li>
+        <li>Show the corrected grid: inverting the model (by iteration) puts the points back on straight lines, to a fraction of a pixel.</li>
+    </ul>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 1, slides 27–29. Focal length 800 pixels, principal point (320, 240). The inverse model has no closed form; it is computed by fixed-point iteration, as calibration libraries do.</p>
+</details>

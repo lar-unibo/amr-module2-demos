@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course demos</title>
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="vendor/katex/katex.min.js"></script>
+    <script type="module" src="js/menu.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">◎</span><span id="brandTitle">Course demos</span></a>
+        <span class="topbar-spacer"></span>
+        <button id="themeButton" class="button icon-button" type="button" title="Switch light / dark theme" aria-label="Switch theme">◐</button>
+        <button id="toolsButton" class="button icon-button" type="button" title="More options" aria-label="More options">⋯</button>
+    </header>
+
+    <main class="menu">
+        <section class="menu-hero">
+            <p class="kicker" id="courseKicker">Interactive companion to the lectures</p>
+            <h1 id="courseTitle">Course demos</h1>
+            <p>Each demo follows a part of a lecture, with its equations and a few experiments to try. The demos are grouped by lecture, in the order of the course. All computations run in Python, directly in your browser: the first demo you open downloads the Python runtime (about 16&nbsp;MB), later visits use the browser cache.</p>
+            <p class="menu-byline" id="courseByline"></p>
+        </section>
+        <div id="lectures"></div>
+    </main>
+</body>
+</html>

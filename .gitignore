@@ -1,0 +1,6 @@
+# build output (GitHub Actions builds and deploys it)
+site/
+# Python
+__pycache__/
+*.pyc
+.venv/

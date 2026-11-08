@@ -1,0 +1,28 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">From the image plane to pixels</p>
+    <p>The image plane of a digital camera is a <span class="tex">W\times H</span> grid of pixels of size <span class="tex">\rho_w\times\rho_h</span>, with the origin at the <b>top-left corner</b>. A point <span class="tex">(x,y)</span> of the image plane (in metres) has pixel coordinates</p>
+    <div class="tex-block">u=\frac{x}{\rho_w}+u_0,\qquad v=\frac{y}{\rho_h}+v_0,</div>
+    <p>where <span class="tex">(u_0,v_0)</span>, the <b>principal point</b>, is where the optical axis meets the image. It is close to, but in general not exactly at, the centre of the image (the small cross).</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Intrinsic parameters</p>
+    <p>With the projection, the intrinsic matrix collects these parameters:</p>
+    <div class="tex-block">\vK=\begin{bmatrix}f/\rho_w&0&u_0\\0&f/\rho_h&v_0\\0&0&1\end{bmatrix}</div>
+    <div class="tex-block">\tilde{\vp}=\vK[\vI|\mathbf 0]\,\tilde{\vP}_C</div>
+    <p><b>Try:</b> the focal length and the pixel size only appear as <span class="tex">f/\rho_w</span> and <span class="tex">f/\rho_h</span>: doubling both gives the same image. With <span class="tex">\rho_w\neq\rho_h</span> (non-square pixels) the image is stretched. Moving <span class="tex">(u_0,v_0)</span> shifts the whole image.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Camera matrix and homography</p>
+    <p>Intrinsics, projection and extrinsics combine into the <span class="tex">3\times4</span> <b>camera matrix</b>, from world points to pixels:</p>
+    <div class="tex-block">\tilde{\vp}=\vK[\vI|\mathbf 0]\,{}^C\vT_0\,\tilde{\vP}_0=\vC\,\tilde{\vP}_0 .</div>
+    <p>Since <span class="tex">u=u'/w'</span>, <span class="tex">\vC</span> and <span class="tex">\lambda\vC</span> give the same pixels: <span class="tex">\vC</span> is known up to scale and has 11 unknowns.</p>
+    <p><b>Try:</b> move the camera (azimuth, elevation, distance): <span class="tex">\vK</span> does not change, while the pose <span class="tex">{}^C\vT_0</span>, and with it <span class="tex">\vC</span> and <span class="tex">\vH</span>, does. Change <span class="tex">f</span> or <span class="tex">(u_0,v_0)</span> instead: <span class="tex">{}^C\vT_0</span> stays the same.</p>
+    <p>For points on a plane, with the world <span class="tex">z</span> axis perpendicular to it (here the table, <span class="tex">Z=0</span>), the third column of <span class="tex">\vC</span> drops out and <span class="tex">\vC</span> becomes the <span class="tex">3\times3</span> <b>homography</b> <span class="tex">\vH</span>, with 8 unknowns: at least 4 point correspondences determine it. The table grid in the image is drawn with <span class="tex">\vH</span>.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 1, slides 19–23. Image of 640 × 480 pixels. The matrices are shown normalized (<span class="tex">c_{34}=1</span>, <span class="tex">h_{33}=1</span>); the last readout checks that <span class="tex">\vC</span> reproduces the pixels computed step by step.</p>
+</details>

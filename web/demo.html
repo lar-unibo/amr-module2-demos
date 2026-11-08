@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course demo</title>
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="vendor/katex/katex.min.js"></script>
+    <script type="module" src="js/shell.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="button ghost" href="index.html" title="Back to the menu">← All demos</a>
+        <button id="lessonToggle" class="button small lesson-toggle" type="button" aria-controls="lessonPanel" aria-expanded="true" title="Hide or show the explanation">◧ Hide lesson</button>
+        <span class="topbar-title" id="topbarTitle"></span>
+        <span class="topbar-spacer"></span>
+        <span class="runtime-pill loading" id="runtimePill" title="The demos run their Python code in this browser (Pyodide)"><i></i><span>Python: loading…</span></span>
+        <nav class="topbar-nav" aria-label="Demo navigation">
+            <a class="button small" id="prevDemo" href="#">◀ Previous</a>
+            <a class="button small" id="nextDemo" href="#">Next ▶</a>
+        </nav>
+        <button id="themeButton" class="button icon-button" type="button" title="Switch light / dark theme" aria-label="Switch theme">◐</button>
+        <button id="toolsButton" class="button icon-button" type="button" title="More: link, figure or video export" aria-label="More options">⋯</button>
+    </header>
+    <div class="demo-layout">
+        <aside class="lesson" id="lessonPanel" aria-label="Lesson">
+            <p class="kicker" id="lessonKicker"></p>
+            <h1 id="lessonTitle"></h1>
+            <p class="lesson-intro" id="lessonIntro"></p>
+            <div id="lessonBody"></div>
+            <div class="lesson-nav">
+                <a class="button" id="prevLesson" href="#">◀ Previous</a>
+                <a class="button primary" id="nextLesson" href="#">Next demo ▶</a>
+            </div>
+        </aside>
+        <main class="workspace" id="workspace">
+            <div class="card py-loading" id="pyLoading">
+                <strong>Starting Python in your browser…</strong>
+                <span id="pyLoadingText">The first visit downloads the Python runtime (about 16 MB); later visits use the browser cache.</span>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">Coordinate frames</p>
+    <p>A calibrated camera and a 3-D model of the target give, at every frame, the pose of the current camera <span class="tex">\mathcal F_c</span> (red) with respect to the object <span class="tex">\mathcal F_o</span>. The task is the desired camera <span class="tex">\mathcal F_d</span> (blue). Their composition</p>
+    <div class="tex-block">{}^d\vT_c=({}^o\vT_d)^{-1}\,{}^o\vT_c
+        =\begin{bmatrix}{}^d\vR_c&{}^d\vt_c\\\mathbf 0^{T}&1\end{bmatrix}</div>
+    <p>must become the identity: <span class="tex">{}^d\vt_c\to\mathbf 0</span> and <span class="tex">{}^d\vR_c\to\vI</span>.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Features and control law</p>
+    <p>The features are the translation and the angle-axis vector of the rotation, <span class="tex">\vs=({}^d\vt_c,\ \theta\vm)</span>, with <span class="tex">\vs^{*}=\mathbf 0</span>. The interaction matrix is block-diagonal, and since <span class="tex">\vL_{\theta\vm}^{-1}\theta\vm=\theta\vm</span>:</p>
+    <div class="tex-block">\nu_c=-\lambda\,{}^d\vR_c^{T}\,{}^d\vt_c,\qquad \omega_c=-\lambda\,\theta\vm.</div>
+    <p>Both errors decay as <span class="tex">e^{-\lambda t}</span> (top-left plot). The card on the right shows <span class="tex">{}^d\vt_c</span>, <span class="tex">\theta</span> and <span class="tex">\vm</span> at the time of the slider: <span class="tex">\vm</span> does not change.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">A straight line in 3-D, curves in the image</p>
+    <p>With a perfect pose estimate, the camera follows the straight line to <span class="tex">\mathcal F_d</span> (dashed) and rotates about a fixed axis. Nothing controls the image: the points follow curves.</p>
+    <p><b>Try:</b> <em>large tilt</em>. The camera path is still straight, but the points leave the image on the way (bottom-right plot above 1). A real system would lose the target, and with it the pose estimate.</p>
+    <p>Rotations about the optical axis are easy for PBVS: try <em>π rad about z</em>, which defeats IBVS (next demos).</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 2, slides 11–19 (PBVS). Square target of side 0.6 m, desired camera 1 m in front of it; image border at <span class="tex">|x|\le0.6</span>, <span class="tex">|y|\le0.45</span>. The pose is assumed perfect here; demo 06 adds calibration errors. Period 0.04 s.</p>
+</details>
