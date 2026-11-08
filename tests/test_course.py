@@ -93,7 +93,9 @@ class InteractionMatrix(unittest.TestCase):
         P = L @ np.linalg.pinv(L)
         np.testing.assert_allclose(P, P.T, atol=1e-12)
         np.testing.assert_allclose(P @ P, P, atol=1e-12)
-        self.assertEqual(np.linalg.matrix_rank(P), 6)
+        # explicit tolerance: the zero singular values of P are rounding noise (~1e-15, amplified by
+        # the conditioning of L), which numpy's default threshold may count depending on the BLAS
+        self.assertEqual(np.linalg.matrix_rank(P, tol=1e-9), 6)
         np.testing.assert_allclose(np.linalg.pinv(L) @ L, np.eye(6), atol=1e-12)
 
     def test_wrong_constant_depth_gives_a_diagonal_product(self):
