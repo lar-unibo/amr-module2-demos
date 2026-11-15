@@ -8,7 +8,7 @@ from itertools import combinations
 import numpy as np
 
 from course.grasp import (Ellipse, Hourglass, complete_grasp_matrix, cross2, grasp_matrix, nnls,
-                          positive_combination, positive_span, primitive_wrenches, tangent)
+                          positive_combination, positive_span, primitive_wrenches, smallest_grip, tangent)
 from sessions import runtime
 
 RNG = np.random.default_rng(3)
@@ -106,10 +106,45 @@ class PositiveSpan(unittest.TestCase):
             self.assertAlmostEqual(np.linalg.norm(A @ x - b), best, places=8)
 
 
+class SmallestGrip(unittest.TestCase):
+
+    @staticmethod
+    def bisection(W, w):
+        """Independent: the smallest s with {alpha >= 0, W^T alpha = -w, sum alpha <= s} feasible,
+        each test a non-negative least-squares problem with a slack."""
+        k = len(W)
+        A = np.block([[W.T, np.zeros((3, 1))], [np.ones((1, k)), np.ones((1, 1))]])
+        feasible = lambda s: np.linalg.norm(A @ nnls(A, np.r_[-w, s]) - np.r_[-w, s]) < 1e-9
+        lo, hi = 0.0, 1.0
+        while not feasible(hi):
+            hi *= 2
+        for _ in range(60):
+            mid = 0.5 * (lo + hi)
+            lo, hi = (lo, mid) if feasible(mid) else (mid, hi)
+        return hi
+
+    def test_matches_bisection(self):
+        shape, solved = Ellipse(), 0
+        for _ in range(60):
+            idx = RNG.choice(len(shape.points), size=RNG.integers(2, 5), replace=False)
+            W, _ = primitive_wrenches(shape.points[idx], shape.normals[idx], "HF", RNG.uniform(0.1, 0.8))
+            w = RNG.normal(size=3)
+            alpha = smallest_grip(W, w)
+            residual = np.linalg.norm(W.T @ nnls(W.T, -w) + w)
+            self.assertEqual(alpha is None, residual > 1e-7)           # balanced exactly when some alpha >= 0 is
+            if alpha is None:
+                continue
+            solved += 1
+            self.assertTrue(np.all(alpha >= 0))
+            np.testing.assert_allclose(W.T @ alpha, -w, atol=1e-9)
+            self.assertAlmostEqual(alpha.sum(), self.bisection(W, w), places=6)
+        self.assertGreater(solved, 20)
+
+
 class Shapes(unittest.TestCase):
 
     def test_boundary_samples_and_normals(self):
-        for shape in (Ellipse(), Hourglass(k=0.4), Hourglass(k=0.0), Hourglass(k=-0.1)):
+        for shape in (Ellipse(), Hourglass(k=0.4), Hourglass(k=0.0), Hourglass(k=-0.1), Hourglass(w0=0.7, h=0.55, k=0.0)):
             np.testing.assert_allclose(shape.clearance(shape.points), 0.0, atol=1e-9)
             np.testing.assert_allclose(np.linalg.norm(shape.normals, axis=1), 1.0)
             corners = getattr(shape, "corners", np.empty((0, 2)))
@@ -197,6 +232,74 @@ class ClosureDemo(unittest.TestCase):
         W = np.array(S["wrenches"]) * [1, 1, S["rho"]]            # unscaled primitive wrenches
         scale = np.array([1.0, 1.0, 1.0 / S["rho"] ** 2])
         self.assertTrue(np.all(W @ (w * scale) >= -1e-9))         # (G lambda) . S^2 w >= 0: cannot cancel w
+
+    def test_four_contacts_are_not_sufficient(self):
+        self.call("preset", name="a")
+        t = np.radians(280)
+        S = self.call("move", index=2, x=0.45 * np.cos(t), y=np.sin(t))     # finger 3 next to finger 4
+        self.assertEqual(len(S["contacts"]), 4)
+        self.assertFalse(S["closed"])
+        self.assertEqual(S["escape"]["kind"], "twist")
+        self.assertFalse(any(S["escape"]["ghost_fingers_in"]))                 # the drawn motion touches no finger
+
+    def test_statics_of_the_box(self):
+        """Slide 28: -G^# w gives each finger mg/2 of friction and no normal force; the squeeze
+        needs gamma >= mg / (2 mu), so a soapy box needs more, and mu = 0 cannot hold it."""
+        S = self.call("preset", name="box")
+        self.assertTrue(S["closed"] and S["load"])
+        L = S["statics"]
+        np.testing.assert_allclose(L["carry"], [[0.0, 0.5], [0.0, 0.5]], atol=1e-12)
+        self.assertEqual(L["carry_inside"], [False, False])
+        previous = 0.0
+        for mu in (0.4, 0.2, 0.1, 0.05):
+            L = self.call("set", mu=mu)["statics"]
+            self.assertAlmostEqual(L["gamma"], 1 / (2 * mu), places=9)
+            self.assertGreater(L["gamma"], previous)
+            previous = L["gamma"]
+            total = np.array(L["total"])
+            np.testing.assert_allclose(np.abs(total), [[1 / (2 * mu), 0.5]] * 2, atol=1e-9)   # on the cone edge
+            np.testing.assert_allclose(total.sum(axis=0), [0.0, 1.0], atol=1e-9)          # balances mg
+            self.assertLess(L["residual"], 1e-9)
+        self.assertFalse(self.call("set", mu=0.0)["statics"]["feasible"])
+        pinch = self.call("preset", name="pinch")
+        self.assertIsNone(pinch["statics"])                                    # presets switch the weight off
+        self.assertAlmostEqual(self.call("set", load=True)["statics"]["gamma"], 1 / 0.6, places=9)
+
+    def test_statics_of_the_other_grasps(self):
+        self.call("preset", name="c")
+        L = self.call("set", load=True)["statics"]
+        self.assertFalse(L["closed"])
+        self.assertTrue(L["feasible"])                                         # not closed, yet it rests on finger 2
+        np.testing.assert_allclose(L["total"], [[0.0, 0.0], [0.0, 1.0]], atol=1e-9)
+        self.call("preset", name="b")
+        S = self.call("set", load=True)
+        self.assertEqual(S["escape"]["second_order"], "held")
+        self.assertFalse(S["statics"]["feasible"])                              # horizontal normals
+        self.call("preset", name="a")
+        L = self.call("set", load=True)["statics"]
+        self.assertEqual(L["carry_inside"], [False, False, True, True])        # -G^# w pulls at fingers 1 and 2
+        self.assertTrue(np.all(np.array(L["lambda"]) >= -1e-12))
+        np.testing.assert_allclose(np.array(L["lambda_carry"]) + L["lambda_squeeze"], L["lambda"], atol=1e-12)
+        self.call("preset", name="tilted")
+        self.assertGreater(self.call("set", load=True, mu=0.69)["statics"]["gamma"], 30)   # near the limit
+        self.assertLess(self.call("set", mu=1.0)["statics"]["gamma"], 1.3)
+
+    def test_statics_with_more_ways_to_squeeze(self):
+        """Three hard fingers: dim N(G) = 3. The forces are in the cones, balance the weight, and
+        need less normal force than squeezing along lambda_int alone."""
+        self.call("preset", name="three")
+        S = self.call("set", load=True)
+        L, mu = S["statics"], S["mu"]
+        self.assertEqual(S["nullity"], 3)
+        self.assertIsNone(L["gamma"])
+        lam = np.array(L["lambda"]).reshape(-1, 2)
+        self.assertTrue(np.all(np.abs(lam[:, 1]) <= mu * lam[:, 0] + 1e-9))
+        self.assertLess(L["residual"], 1e-9)
+        np.testing.assert_allclose(np.array(S["G"]) @ L["lambda_squeeze"], 0.0, atol=1e-6)    # in N(G) (G rounded in the JSON)
+        carry = np.array(L["lambda_carry"]).reshape(-1, 2)
+        d = np.array(S["internal"]["lambda"]).reshape(-1, 2)
+        gamma = max(np.max((s * carry[:, 1] - mu * carry[:, 0]) / (mu * d[:, 0] - s * d[:, 1])) for s in (1, -1))
+        self.assertLess(L["grip"], (carry + gamma * d)[:, 0].sum() - 1.0)
 
     def test_dragging_snaps_to_the_boundary(self):
         S = self.call("move", index=0, x=0.9, y=0.0)

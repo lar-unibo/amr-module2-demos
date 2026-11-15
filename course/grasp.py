@@ -214,6 +214,29 @@ def nnls(A, b, tol: float = 1e-12, max_iter: int | None = None):
     return x
 
 
+def smallest_grip(W, w, tol: float = 1e-9):
+    """Slide 28: contact forces that balance the external wrench w with the smallest total
+    normal force. W holds the primitive wrenches (rows, unit normal force each), so the
+    forces are alpha >= 0 with W^T alpha = -w, and the total normal force is sum(alpha).
+
+    A linear program: its optimum is at a vertex, a basis of rank(W) primitive wrenches,
+    so every basis is tried (at most 12 choose 3). Returns alpha, or None when no
+    non-negative combination balances w.
+    """
+    W, w = np.atleast_2d(np.asarray(W, float)), np.asarray(w, float)
+    r = int(np.linalg.matrix_rank(W, tol=1e-9)) if W.size else 0
+    best, best_sum = None, np.inf
+    for basis in combinations(range(len(W)), r):
+        A = W[list(basis)].T
+        a = np.linalg.lstsq(A, -w, rcond=None)[0]
+        if np.linalg.norm(A @ a + w) > tol * max(1.0, np.linalg.norm(w)) or a.min() < -tol:
+            continue
+        if a.sum() < best_sum - 1e-12:
+            best, best_sum = np.zeros(len(W)), a.sum()
+            best[list(basis)] = np.clip(a, 0.0, None)
+    return best
+
+
 def positive_combination(W, margin: float):
     """alpha > 0 (every entry) with sum_k alpha_k w_k = 0, given that the origin is
     interior to the hull of the rows of W with this margin; the largest entry is 1.

@@ -1,7 +1,7 @@
 // Lecture 3, demo 1 - Form and force closure of a planar grasp.
 import { matrixTex, setTex } from '../lib/cams.js';
 import { alpha, palette } from '../lib/theme.js';
-import { button, card, fmt, h, label, readouts, segmented, slider } from '../lib/ui.js';
+import { button, card, fmt, h, label, readouts, segmented, slider, toggle } from '../lib/ui.js';
 import { planeCard, view3dCard } from '../lib/widgets.js';
 
 const RECT = { x0: -1.3, x1: 1.3, y0: -1.18, y1: 1.18 };
@@ -20,7 +20,8 @@ export async function mount({ workspace, session, state, options }) {
         legendItems: (p) => [
             { label: 'inward normal $n_i$', color: p.ink, kind: 'line' },
             { label: 'friction cone', color: p.aqua, kind: 'line' },
-            { label: 'internal force', color: p.gripR, kind: 'line' },
+            { label: 'squeeze, contact force', color: p.accent, kind: 'line' },
+            { label: 'weight $mg$', color: p.gripR, kind: 'line' },
             { label: 'free motion', color: p.red, kind: 'dashed' },
         ],
     });
@@ -51,12 +52,13 @@ export async function mount({ workspace, session, state, options }) {
         value: S.model, onChange: (v) => send({ model: v }) });
     const mu = slider({ label: 'friction coefficient $\\mu$', min: 0, max: 1.2, step: 0.01, value: S.mu,
         format: (v) => `${v.toFixed(2)}  (cone ${(Math.atan(v) * 180 / Math.PI).toFixed(1)}°)`, onInput: (v) => send({ mu: v }) });
-    const shape = segmented({ options: [{ value: 'ellipse', label: 'ellipse' }, { value: 'hourglass', label: 'hourglass' }],
+    const shape = segmented({ options: [{ value: 'ellipse', label: 'ellipse' }, { value: 'hourglass', label: 'hourglass' }, { value: 'box', label: 'box' }],
         value: S.shape, onChange: (v) => send({ shape: v }) });
     const curvature = slider({ label: 'side curvature $k$ (hourglass)', min: -0.15, max: 0.8, step: 0.05, value: S.k,
         format: (v) => `${v.toFixed(2)}  ${Math.abs(v) < 1e-9 ? 'box' : v > 0 ? 'hourglass' : 'barrel'}`, onInput: (v) => send({ k: v }) });
     const fingers = segmented({ options: [2, 3, 4, 5, 6].map((n) => ({ value: n, label: String(n) })),
         value: S.contacts.length, onChange: (v) => send({ fingers: v }) });
+    const weight = toggle({ label: 'weight $mg$ at the centre: forces that hold it', value: S.load, onChange: (v) => send({ load: v }) });
     const preset = (name) => async () => { S = await session.call('preset', { name }); load(); };
     const presets = h('div', { class: 'toolbar', style: 'padding-top:4px' },
         h('span', { class: 'card-note' }, 'slide 8:'),
@@ -66,12 +68,15 @@ export async function mount({ workspace, session, state, options }) {
         h('span', { class: 'toolbar-divider' }),
         button('pinch', preset('pinch'), { small: true, title: 'two hard fingers, antipodal and collinear' }),
         button('tilted pinch', preset('tilted'), { small: true, title: 'two hard fingers, normals not along the line between them' }),
-        button('three fingers', preset('three'), { small: true, title: 'three hard fingers' }));
+        button('three fingers', preset('three'), { small: true, title: 'three hard fingers' }),
+        h('span', { class: 'toolbar-divider' }),
+        h('span', { class: 'card-note' }, 'slide 28:'),
+        button('box', preset('box'), { small: true, title: 'two fingers with friction hold a box against its weight' }));
     const controls = card('Grasp', 'fingers are fixed; contacts are points');
     controls.body.append(
         h('div', { class: 'choice-row' }, h('span', {}, 'contact model'), model.el), mu.el,
         h('div', { class: 'choice-row' }, h('span', {}, 'object'), shape.el, h('span', {}, 'fingers'), fingers.el), curvature.el,
-        presets);
+        weight.el, presets);
 
     const matrices = card('Grasp matrix', 'moments about the centre of the object');
     const gTex = h('div', { class: 'matrix-tex' });
@@ -94,13 +99,13 @@ export async function mount({ workspace, session, state, options }) {
         scene.view.draw((g) => {
             const p = g.p, c = look(p);
             g.frame({ step: 0.25, axes: false });
-            const E = S.escape;
+            const E = S.escape, L = S.statics;
             // the free motion: the object moved along nu_B, with the fingers fixed
             if (E.kind === 'twist') {
                 E.ghosts.forEach((ghost, k) => g.polyline(ghost, { color: alpha(p.red, 0.3 + 0.25 * k), width: 1.4, dash: [5, 4] }));
             }
             g.polygon(S.outline, { fill: c.object, color: c.objectEdge, width: 1.4 });
-            if (E.kind !== 'wrench') {                              // frame {B} (the wrench is drawn there otherwise)
+            if (E.kind !== 'wrench' && !L) {                        // frame {B} (a wrench is drawn there otherwise)
                 g.arrow([0, 0], [0.22, 0], { color: alpha(p.red, 0.8), width: 1.5, head: 6 });
                 g.arrow([0, 0], [0, 0.22], { color: alpha(p.aqua, 0.8), width: 1.5, head: 6 });
                 g.text([0, 0], '{B}', { dx: -22, dy: 14, size: 10 });
@@ -112,20 +117,45 @@ export async function mount({ workspace, session, state, options }) {
                     const L = 0.5, edge = (s) => { const v = [n[0] + s * S.mu * t[0], n[1] + s * S.mu * t[1]]; const k = L / Math.hypot(...v); return [ci[0] + k * v[0], ci[1] + k * v[1]]; };
                     g.polygon([ci, edge(1), edge(-1)], { fill: alpha(p.aqua, 0.18), color: alpha(p.aqua, 0.75), width: 1.2 });
                 }
-                // internal force: a wide band under the normal (they coincide without friction)
-                if (S.internal) {
+                // squeeze (internal force): a wide band under the normal (they coincide without friction)
+                if (S.internal && !L) {
                     const f = S.internal.world[i];
-                    g.arrow(ci, [ci[0] + 0.5 * f[0], ci[1] + 0.5 * f[1]], { color: alpha(p.gripR, 0.6), width: 7, head: 13 });
+                    g.arrow(ci, [ci[0] + 0.5 * f[0], ci[1] + 0.5 * f[1]], { color: alpha(p.accent, 0.45), width: 7, head: 13 });
                 }
                 g.arrow(ci, [ci[0] + 0.3 * n[0], ci[1] + 0.3 * n[1]], { color: p.ink, width: 1.5, head: 7 });
             });
             if (E.kind === 'wrench') drawWrench(g, E.wrench);
+            if (L) drawLoad(g, L);
             S.contacts.forEach((_, i) => {
                 const q = fingerCentre(i);
                 const inside = E.kind === 'twist' && E.ghost_fingers_in[i];
                 g.point(q, { r: FINGER_R * g.view.k, color: c.finger, ring: inside ? p.red : c.fingerEdge });
                 g.text(q, String(i + 1), { size: 10, align: 'center', dy: 3.5, color: '#ffffff' });
             });
+        });
+    }
+
+    // slide 28: the weight at the centre (orange) and the contact forces that hold it (blue):
+    // the squeeze (wide), then -G^# w (dashed) from its tip, ending at the total force (solid)
+    function drawLoad(g, L) {
+        const p = g.p;
+        const len = (v) => Math.hypot(v[0], v[1]);
+        const forces = [L.total, L.carry, L.squeeze].filter(Boolean).flat();
+        // longest arrow: under half the distance between two fingers, so opposite forces do not cross
+        let gap = Infinity;
+        S.contacts.forEach((a, i) => S.contacts.forEach((b, j) => { if (j > i) gap = Math.min(gap, Math.hypot(a[0] - b[0], a[1] - b[1])); }));
+        const k = Math.min(0.5, 0.45 * gap) / Math.max(1, ...forces.map(len));
+        const at = (q, v) => [q[0] + k * v[0], q[1] + k * v[1]];
+        g.arrow([0, 0], [0, -k], { color: p.gripR, width: 3, head: 10 });
+        g.text([0, -k], 'mg', { dx: 7, dy: 2, size: 12, color: p.gripR });
+        if (!L.feasible) return;
+        S.contacts.forEach((ci, i) => {
+            if (L.squeeze) {
+                const tip = at(ci, L.squeeze[i]);
+                if (k * len(L.squeeze[i]) > 0.01) g.arrow(ci, tip, { color: alpha(p.accent, 0.45), width: 7, head: 13 });
+                if (k * len(L.carry[i]) > 0.01) g.arrow(tip, at(tip, L.carry[i]), { color: p.accent, width: 1.5, head: 7, dash: [4, 3] });
+            }
+            if (k * len(L.total[i]) > 0.01) g.arrow(ci, at(ci, L.total[i]), { color: p.accent, width: 2.5, head: 9 });
         });
     }
 
@@ -181,7 +211,7 @@ export async function mount({ workspace, session, state, options }) {
 
     function load() {
         model.set(S.model); mu.set(S.mu); mu.disable(S.model !== 'HF'); shape.set(S.shape);
-        curvature.set(S.k); curvature.disable(S.shape !== 'hourglass'); fingers.set(S.contacts.length);
+        curvature.set(S.k); curvature.disable(S.shape !== 'hourglass'); fingers.set(S.contacts.length); weight.set(S.load);
         const test = S.model === 'PwoF' ? 'form closure (first order)' : 'force closure';
         status.className = `run-status ${S.closed ? 'good' : 'bad'}`;
         status.textContent = S.closed ? `✓ ${test}` : `✗ no ${test}`;
@@ -193,12 +223,21 @@ export async function mount({ workspace, session, state, options }) {
         counts.set('null', String(S.nullity));
         why.replaceChildren(label(explain()));
         setTex(gTex, matrixTex('G', S.G, 2));
-        const E = S.escape;
-        if (S.internal) {
+        const E = S.escape, L = S.statics;
+        matrices.note.replaceChildren(label(L ? 'slide 28: $w+G\\lambda=0$, weight $w=[0,\\,-mg,\\,0]^T$' : 'moments about the centre of the object'));
+        if (L && L.feasible) {
+            setTex(extraTex, L.carry
+                ? `\\begin{aligned} -G^{\\#}w &= ${vec(L.lambda_carry)}^T \\\\ \\text{squeeze} &= ${vec(L.lambda_squeeze)}^T \\\\ \\lambda &= ${vec(L.lambda)}^T \\end{aligned}`
+                : `\\lambda = ${vec(L.lambda)}^T,\\quad w + G\\lambda = 0`);
+            matrixNote.replaceChildren(label(statics(L)));
+        } else if (L) {
+            setTex(extraTex, '');
+            matrixNote.replaceChildren(label(statics(L)));
+        } else if (S.internal) {
             setTex(extraTex, `\\lambda_{\\text{int}} = ${vec(S.internal.lambda)}^T,\\quad G\\lambda_{\\text{int}} = 0`);
             matrixNote.textContent = S.model === 'PwoF'
-                ? 'An internal force: positive normal forces that squeeze the object without moving it (largest = 1).'
-                : 'An internal force strictly inside the friction cones (orange arrows; largest = 1).';
+                ? 'A squeeze (internal force): positive normal forces with no net wrench on the object (largest = 1).'
+                : 'A squeeze (internal force) strictly inside the friction cones (blue; largest = 1).';
         } else if (E.kind === 'twist') {
             setTex(extraTex, `\\nu_B = ${vec(E.twist)}^T,\\quad G^T\\nu_B = ${vec(E.normal_speeds)}^T`);
             matrixNote.textContent = 'A free motion: normal velocities at the contacts ≥ 0, so no finger is penetrated (first order).';
@@ -209,6 +248,32 @@ export async function mount({ workspace, session, state, options }) {
         drawScene(); drawSpace();
     }
 
+    // slide 28, in words (forces in units of mg)
+    function statics(L) {
+        const list = (flags) => flags.map((v, i) => (v ? null : i + 1)).filter(Boolean);
+        if (!L.feasible) {
+            if (S.escape.second_order === 'held') {
+                return 'No contact forces balance the weight in this exact configuration. The curvature still holds the object: it sinks slightly, which takes a little deformation, until the normals can carry the weight.';
+            }
+            return `No contact forces inside the cones balance the weight: these fingers cannot hold it${S.model === 'HF' && S.mu === 0 ? ' without friction' : ''}.`;
+        }
+        if (!L.closed) {
+            return `Not closed, yet this weight alone can be balanced (solid arrows; total normal force ${fmt(L.grip, 2)} $mg$). A wrench in another direction could not be.`;
+        }
+        const out = list(L.carry_inside);
+        let text = '$-G^{\\#}w$ (dashed) carries the weight with the smallest forces' +
+            (out.length === 0 ? ', already inside the cones.'
+                : S.model === 'HF' ? `, but outside the friction cone at finger ${out.join(', ')}.` : `, but it pulls at finger ${out.join(', ')}.`);
+        if (L.gamma !== null) {
+            const slide = S.model === 'HF' && Math.abs(L.gamma - 1 / (2 * S.mu)) < 1e-6 * Math.max(1, L.gamma);
+            text += ` The squeeze (wide) adds normal force until every contact force (solid) is in its cone: $\\gamma = ${L.gamma.toFixed(2)}\\,mg$` +
+                (slide ? ' $=\\frac{mg}{2\\mu}$ (slide 28).' : ', the largest normal force of the squeeze.');
+        } else {
+            text += ` Of all the squeezes in $\\mathcal N(G)$ (dimension ${S.nullity}), the one shown brings every contact force (solid) into its cone with the smallest total normal force, ${fmt(L.grip, 2)} $mg$.`;
+        }
+        return text;
+    }
+
     function explain() {
         const E = S.escape;
         const nc = S.contacts.length;
@@ -216,7 +281,7 @@ export async function mount({ workspace, session, state, options }) {
         if (S.closed) {
             text = S.model === 'PwoF'
                 ? `The normal wrenches positively span the wrench space: the origin is inside their hull (margin ${fmt(S.hull.margin, 2)}). No motion is possible without pushing into a finger.`
-                : `The friction-cone edges positively span the wrench space (margin ${fmt(S.hull.margin, 2)}): squeezing with the internal force, the fingers can resist any wrench.`;
+                : `The friction-cone edges positively span the wrench space (margin ${fmt(S.hull.margin, 2)}): squeezing as needed, the fingers can balance any external wrench.`;
         } else if (E.kind === 'twist') {
             if (E.second_order === 'held') {
                 text = `Every first-order free motion is tangential at all contacts ($G^T\\nu_B=0$). On the true shape each of them pushes into a finger, and no small extra shift avoids it (drawn: the motion closest to escaping): the curvature holds the object, as in grasp (b).`;

@@ -11,22 +11,27 @@ page shows the reason: a free motion of the object (frictionless) or a wrench
 the contacts cannot balance (friction). When the first-order test fails only
 because every free motion is tangential to all contacts, as for grasp (b), the
 true curved shape is moved along those motions to see whether it pushes into
-a finger.
+a finger. With the weight switched on, the statics of slide 28 splits the
+contact forces that hold it into the part that carries the load, -G^# w, and a
+squeeze in N(G), the smallest that keeps every force in its friction cone.
 """
 from __future__ import annotations
 
 import numpy as np
 
 from course.grasp import (Ellipse, Hourglass, finite_motion, grasp_matrix, planar_motion,
-                          positive_combination, positive_span, primitive_wrenches, tangent,
+                          positive_combination, positive_span, primitive_wrenches, smallest_grip, tangent,
                           tangential_motions, to_object)
 
 from .common import Session
 
 MODELS = ("PwoF", "HF")
+SHAPES = ("ellipse", "hourglass", "box")
 AMPLITUDE = 0.2          # size of the drawn free motion (object units, the object is 2 tall)
 TOL = 2e-4               # penetration below this counts as sliding (object units)
 GHOSTS = (1 / 3, 2 / 3, 1.0)
+BOX = (0.7, 0.55)        # half-width and half-height of the box of slide 28
+WEIGHT = np.array([0.0, -1.0, 0.0])   # w: the weight mg at the centre of the object, in units of mg
 
 
 def _ellipse_point(deg):
@@ -41,6 +46,8 @@ PRESETS = {
     "pinch": {"shape": "ellipse", "model": "HF", "mu": 0.3, "points": [_ellipse_point(0), _ellipse_point(180)]},
     "tilted": {"shape": "ellipse", "model": "HF", "mu": 0.3, "points": [_ellipse_point(25), _ellipse_point(205)]},
     "three": {"shape": "ellipse", "model": "HF", "mu": 0.2, "points": [_ellipse_point(d) for d in (90, 210, 330)]},
+    # slide 28: two fingers with friction hold a box against its weight
+    "box": {"shape": "box", "model": "HF", "mu": 0.4, "load": True, "points": [[BOX[0], 0.0], [-BOX[0], 0.0]]},
 }
 
 
@@ -60,11 +67,12 @@ class ClosureSession(Session):
         self.shape_name, self.model = spec["shape"], spec["model"]
         self.k = spec.get("k", self.k)
         self.mu = spec.get("mu", self.mu)
+        self.load = spec.get("load", False)
         self._build_shape()
         self.contacts = [self._nearest(p) for p in spec["points"]]
         return self.state()
 
-    def act_set(self, shape=None, k=None, model=None, mu=None, fingers=None):
+    def act_set(self, shape=None, k=None, model=None, mu=None, fingers=None, load=None):
         points = self.shape.points[self.contacts]
         if model is not None:
             if model not in MODELS:
@@ -72,9 +80,11 @@ class ClosureSession(Session):
             self.model = model
         if mu is not None:
             self.mu = float(np.clip(mu, 0.0, 1.5))
+        if load is not None:
+            self.load = bool(load)
         if shape is not None or k is not None:
             if shape is not None:
-                if shape not in ("ellipse", "hourglass"):
+                if shape not in SHAPES:
                     raise KeyError(shape)
                 self.shape_name = shape
             if k is not None:
@@ -94,7 +104,12 @@ class ClosureSession(Session):
 
     # ------------------------------------------------------------------ helpers
     def _build_shape(self):
-        self.shape = Ellipse() if self.shape_name == "ellipse" else Hourglass(k=self.k)
+        if self.shape_name == "ellipse":
+            self.shape = Ellipse()
+        elif self.shape_name == "box":
+            self.shape = Hourglass(w0=BOX[0], h=BOX[1], k=0.0)
+        else:
+            self.shape = Hourglass(k=self.k)
         self.rho = float(np.mean(np.linalg.norm(self.shape.points, axis=1)))     # characteristic length
 
     def _nearest(self, p):
@@ -122,8 +137,8 @@ class ClosureSession(Session):
         self.outline = self.shape.outline()
         G = grasp_matrix(c, n, self.model)
         scale = np.diag([1.0, 1.0, 1.0 / self.rho])                 # moments / rho
-        W, owner = primitive_wrenches(c, n, self.model, self.mu if self.model == "HF" else 0.0)
-        W = W @ scale
+        W_raw, owner = primitive_wrenches(c, n, self.model, self.mu if self.model == "HF" else 0.0)
+        W = W_raw @ scale
         hull = positive_span(W)
         rank_G = int(np.linalg.matrix_rank(G, tol=1e-9)) if G.size else 0
 
@@ -144,6 +159,8 @@ class ClosureSession(Session):
             internal = {"local": local * k, "world": world * k, "lambda": lam * k,
                         "residual": float(np.linalg.norm(G @ lam))}
 
+        statics = self._statics(c, n, G, W_raw, owner, internal) if self.load else None
+
         angles = None
         if len(c) == 2:
             u = (c[1] - c[0]) / max(np.linalg.norm(c[1] - c[0]), 1e-12)
@@ -157,7 +174,48 @@ class ClosureSession(Session):
             "G": G, "n_l": G.shape[1], "rank_G": rank_G, "nullity": G.shape[1] - rank_G,
             "wrenches": W, "owner": owner, "hull": {k_: hull[k_] for k_ in ("rank", "closed", "relative", "margin", "faces")},
             "closed": hull["closed"], "escape": escape, "internal": internal, "angles": angles,
+            "load": self.load, "statics": statics,
         }
+
+    def _statics(self, c, n, G, W_raw, owner, internal) -> dict:
+        """Slide 28: the fingers balance the weight, w + G lambda = 0. Of all the solutions
+        lambda = -G^# w (carries the load) + N(G) gamma (squeezes), the one with the smallest
+        total normal force that keeps every contact force in its cone."""
+        w, hf = WEIGHT, self.model == "HF"
+
+        def split(lam):                       # stacked lambda -> local [f_n, f_t] and world forces per contact
+            local = lam.reshape(-1, 2) if hf else np.column_stack([lam, np.zeros_like(lam)])
+            return local, local[:, :1] * n + local[:, 1:] * tangent(n)
+
+        out = {"w": w, "closed": internal is not None, "feasible": False, "gamma": None, "grip": None,
+               "carry": None, "squeeze": None, "total": None, "carry_inside": None,
+               "lambda_carry": None, "lambda_squeeze": None, "lambda": None, "residual": None}
+        alpha = smallest_grip(W_raw, w)
+        if alpha is None:                     # no contact forces in the cones balance the weight
+            return out
+        if hf:                                # cone edges [1, +mu], [1, -mu] -> [f_n, f_t]
+            a = alpha.reshape(-1, 2)
+            lam = np.column_stack([a.sum(axis=1), self.mu * (a[:, 0] - a[:, 1])]).ravel()
+        else:
+            lam = alpha
+        local, world = split(lam)
+        out.update({"feasible": True, "lambda": lam, "total": world, "grip": float(local[:, 0].sum()),
+                    "residual": float(np.linalg.norm(G @ lam + w))})
+        if internal is not None:
+            # closed (rank G = 3): the part that carries the load, and the squeeze in N(G)
+            carry = -np.linalg.pinv(G) @ w
+            squeeze = lam - carry
+            c_local, c_world = split(carry)
+            inside = ([bool(abs(ft) <= self.mu * fn + 1e-9) for fn, ft in c_local] if hf
+                      else [bool(fn >= -1e-9) for fn, _ in c_local])
+            out.update({"carry": c_world, "carry_inside": inside, "squeeze": split(squeeze)[1],
+                        "lambda_carry": carry, "lambda_squeeze": squeeze})
+            if G.shape[1] - np.linalg.matrix_rank(G, tol=1e-9) == 1:
+                # one way to squeeze: gamma along lambda_int, scaled to a largest normal force of 1
+                d = np.asarray(internal["lambda"], float)
+                d = d / split(d)[0][:, 0].max()
+                out["gamma"] = float(squeeze @ d / (d @ d))
+        return out
 
     def _escape(self, c, G, W, hull) -> dict:
         """Why the test fails: a free motion (PwoF) or an unbalanced wrench (HF)."""
