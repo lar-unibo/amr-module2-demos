@@ -1,9 +1,9 @@
 """
-Grasp selection from a point cloud, in a vertical plane (lecture 3, slides 52-58, 61).
+Grasp selection from a point cloud, in a vertical plane (lecture 3, slides 51-57, 60).
 =====================================================================================
 
 A cross-section of the scene: x horizontal, z up, the table at z = 0, a novel
-object on it (no model). The pipeline of slide 52:
+object on it (no model). The pipeline of slide 51:
 
 1. **Depth data** (slide 37). A depth camera with one row of pixels measures the
    depth d along its optical axis for each pixel u; the point is
@@ -11,20 +11,20 @@ object on it (no model). The pipeline of slide 52:
    known camera pose. Depth noise is added along the ray; surfaces seen at a
    grazing angle give no measurement (dropouts). Points on the table are removed
    (segmentation), and two cameras can be fused.
-2. **Normals and curvature** (slides 53-55). For each point, its k nearest points
+2. **Normals and curvature** (slides 52-54). For each point, its k nearest points
    p_j give Cov_i = 1/k sum (p_j - pbar)(p_j - pbar)^T, eigenvalues
    lambda_0 <= lambda_1, eigenvectors v_0, v_1: v_0 is the normal (up to its sign,
    flipped towards the camera that saw the point: n_i . (p_cam - p_i) > 0, so it
    points outwards) and sigma_i = lambda_0 / (lambda_0 + lambda_1) is the surface
    variation. In 2-D sigma is in [0, 1/2] (in 3-D, with three eigenvalues, [0, 1/3]).
-3. **Antipodal candidates** (slides 56-57). Contacts c_1, c_2 with outward normals
+3. **Antipodal candidates** (slides 55-56). Contacts c_1, c_2 with outward normals
    n_1, n_2 and u = (c_2 - c_1) / ||c_2 - c_1|| are accepted if
    angle(u, -n_1) < arctan(mu) and angle(-u, -n_2) < arctan(mu), and
    ||c_2 - c_1|| < the maximum opening of the parallel-jaw gripper.
-4. **Evaluate and select** (slide 58). The gripper closes along u and approaches
+4. **Evaluate and select** (slide 57). The gripper closes along u and approaches
    along z_g, perpendicular to u (from above, never from below the table). Poses
    whose fingers, palm or wrist, swept along the straight approach from the
-   pregrasp pose (slide 61: same orientation, d back along z_g), hit a measured
+   pregrasp pose (slide 60: same orientation, d back along z_g), hit a measured
    point or the table are discarded. The others get the cost
    C = C_antipodal + alpha_reach C_reach + alpha_clear C_clear (alpha_antipodal = 1).
 """
@@ -41,7 +41,7 @@ def box(width: float = 0.06, height: float = 0.10):
 
 
 def blob(samples: int = 180):
-    """A smooth irregular object, like the one of the antipodal figure (slide 56), resting on
+    """A smooth irregular object, like the one of the antipodal figure (slide 55), resting on
     the table: a rounded box (superellipse |x/a|^3.2 + |z/b|^3.2 = 1) with wavy sides."""
     phi = 2 * np.pi * np.arange(samples) / samples
     c, s = np.cos(phi), np.sin(phi)
@@ -118,7 +118,7 @@ def depth_scan(polygon, camera, target, *, pixels: int = 200, fov_deg: float = 5
             "on_object": on_object[ok], "pixel": np.flatnonzero(ok), "origin": o}
 
 
-# ---------------------------------------------------------------------- normals and curvature (slides 53-55)
+# ---------------------------------------------------------------------- normals and curvature (slides 52-54)
 def nearest(P, k: int):
     """Indices of the k nearest points of each point (itself included), nearest first."""
     D = np.sum((P[:, None, :] - P[None, :, :]) ** 2, axis=2)
@@ -144,7 +144,7 @@ def local_pca(P, k: int) -> dict:
 
 
 def orient_towards(normals, points, viewpoints):
-    """Flip each normal so that n_i . (p_cam - p_i) > 0 (slide 54): outward normals."""
+    """Flip each normal so that n_i . (p_cam - p_i) > 0 (slide 53): outward normals."""
     s = np.sign(np.sum(normals * (viewpoints - points), axis=1))
     return normals * np.where(s == 0, 1.0, s)[:, None]
 
@@ -155,7 +155,7 @@ def angle_between(a, b):
     return np.arccos(np.clip(c, -1.0, 1.0))
 
 
-# ---------------------------------------------------------------------- antipodal candidates (slides 56-57)
+# ---------------------------------------------------------------------- antipodal candidates (slides 55-56)
 def antipodal_pairs(P, N, mu: float, max_opening: float, min_opening: float = 0.004) -> dict:
     """All pairs (i < j) and the antipodal test with outward normals N.
 
@@ -175,7 +175,7 @@ def antipodal_pairs(P, N, mu: float, max_opening: float, min_opening: float = 0.
             "within_opening": int(fits.sum()), "half_angle": float(half)}
 
 
-# ---------------------------------------------------------------------- gripper, collisions, cost (slides 57-58, 61)
+# ---------------------------------------------------------------------- gripper, collisions, cost (slides 56-57, 60)
 GRIPPER = {"finger_width": 0.008, "finger_length": 0.045, "tip": 0.004, "palm_height": 0.012,
            "wrist_width": 0.016, "wrist_length": 0.03, "margin": 0.02}
 

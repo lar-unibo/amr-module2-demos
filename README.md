@@ -18,9 +18,9 @@ All computations run in Python, **directly in the browser**, with [Pyodide](http
 | | 06 PBVS vs IBVS, with calibration errors | 35 |
 | | 07 Stability of IBVS | 38–39 |
 | 3 · Grasping | 01 Form and force closure (planar grasp matrix, positive span, curvature, friction cones) | 8, 23–30 |
-| | 02 Registration with known correspondences (centroids, cross-covariance, SVD, the correction D) | 39–45 |
-| | 03 ICP: registration without correspondences (local minima, rejection, point-to-plane) | 46–51 |
-| | 04 Grasp selection from point clouds (depth scans, normals and curvature by local PCA, antipodal grasps, pregrasp) | 52–58, 61 |
+| | 02 Registration with known correspondences (centroids, cross-covariance, SVD, the correction D) | 39–44 |
+| | 03 ICP: registration without correspondences (local minima, rejection, point-to-plane) | 45–50 |
+| | 04 Grasp selection from point clouds (depth scans, normals and curvature by local PCA, antipodal grasps, pregrasp) | 51–57, 60 |
 
 The demos of a lecture follow the order of its slides.
 

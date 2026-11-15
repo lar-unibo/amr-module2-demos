@@ -2,7 +2,7 @@
 Point-cloud registration: closed form with known correspondences, and ICP.
 =========================================================================
 
-Lecture 3, slides 39-51, in the notation of the slides:
+Lecture 3, slides 39-50, in the notation of the slides:
 
 * model points m_i, in the object frame; scene points s_j = T_cam s_j^c, in
   the world frame; the unknown is T_obj = [[R, t], [0, 1]] with R m + t ~ s;
@@ -91,7 +91,7 @@ def knn(P, k: int):
 
 def pca_normals(P, k: int = 10, viewpoint=None):
     """Normals by local PCA: eigenvector of the smallest eigenvalue of the covariance of the
-    k nearest points (slides 53-55), flipped towards the viewpoint; also the surface
+    k nearest points (slides 52-54), flipped towards the viewpoint; also the surface
     variation lambda_0 / (lambda_0 + lambda_1 + lambda_2)."""
     P = np.asarray(P, float)
     idx = knn(P, k)
@@ -137,7 +137,7 @@ def point_to_plane_step(q, s, n):
 def icp(model, scene, T0, iterations: int = 60, metric: str = "point", normals=None,
         reject_distance=None, reject_worst: float = 0.0, tol: float = 1e-4,
         min_step=(np.radians(0.02), 2e-5)) -> list:
-    """Iterative closest point (slide 47), from the initial guess T0 of T_obj.
+    """Iterative closest point (slide 46), from the initial guess T0 of T_obj.
 
     At every iteration: the closest model point m_c(j) of each scene point s_j
     (model at the current pose), rejection, the alignment of the kept pairs

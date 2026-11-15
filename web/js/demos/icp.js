@@ -60,7 +60,7 @@ export async function mount({ workspace, session, state, options }) {
         value: S.reject, onChange: (v) => send({ reject: v }) });
     const distance = sl('reject_distance', 'distance threshold', 0.3, 5, 0.1, (v) => `${v.toFixed(1)} cm`);
     const worst = sl('reject_worst', 'worst pairs rejected', 1, 50, 1, (v) => `${v.toFixed(0)} %`);
-    const variant = card('ICP variant', 'slides 48–51');
+    const variant = card('ICP variant', 'slides 47–50');
     variant.body.append(h('div', { class: 'choice-row' }, h('span', {}, 'error metric'), metric.el),
         h('div', { class: 'choice-row' }, h('span', {}, 'reject pairs'), reject.el),
         h('div', { class: 'slider-group' }, distance.el, worst.el));

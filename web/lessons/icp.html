@@ -1,7 +1,7 @@
 <section class="lesson-block">
     <p class="lesson-kicker">Correspondences are unknown</p>
     <p>A depth camera sees the bracket on the table. Each measured pixel becomes a point <span class="tex">s_j^c=d\,K^{-1}[u\;v\;1]^T</span>, and with the known camera pose <span class="tex">s_j=T_{cam}\,s_j^c</span> (blue). Only the side facing the camera is measured; grazing surfaces give no depth (grey pixels in the depth image). Nobody tells us which model point <span class="tex">m_i</span> each <span class="tex">s_j</span> is.</p>
-    <p><b>ICP</b> starts from an initial guess of <span class="tex">T_{obj}</span> and alternates two steps (slide 47):</p>
+    <p><b>ICP</b> starts from an initial guess of <span class="tex">T_{obj}</span> and alternates two steps (slide 46):</p>
     <ol class="missions">
         <li><b>correspondences</b>: for each scene point, the closest model point <span class="tex">m_{c(j)}</span>, with the model at the current pose (red lines);</li>
         <li><b>alignment</b>: <span class="tex">(R,t)</span> in closed form from the pairs, as with known correspondences;</li>
@@ -33,6 +33,6 @@
 
 <details>
     <summary>Slides and simulation</summary>
-    <p>Lecture 3, slides 37 and 46–51 (Besl and McKay 1992; Chen and Medioni 1992; Rusinkiewicz and Levoy 2001). The bracket is 16 × 10 × 12 cm, with 1000 model points on its surface. The depth camera is 80 × 60 pixels with <span class="tex">f=95</span> pixels, about 50 cm from the object. One ray per pixel finds the first surface. Depths have Gaussian noise, and rays meeting a surface at more than 83° from its normal are dropped. Outliers are random depths at random pixels around the object. The object is assumed segmented from the table.</p>
+    <p>Lecture 3, slides 37 and 45–50 (Besl and McKay 1992; Chen and Medioni 1992; Rusinkiewicz and Levoy 2001). The bracket is 16 × 10 × 12 cm, with 1000 model points on its surface. The depth camera is 80 × 60 pixels with <span class="tex">f=95</span> pixels, about 50 cm from the object. One ray per pixel finds the first surface. Depths have Gaussian noise, and rays meeting a surface at more than 83° from its normal are dropped. Outliers are random depths at random pixels around the object. The object is assumed segmented from the table.</p>
     <p>Closest points are found by brute force (no k-d tree). The normals use the 10 nearest scene points. ICP stops when <span class="tex">E</span> changes by less than <span class="tex">10^{-4}</span> (relative), or the pose moves by less than 0.02° and 0.02 mm, or after 60 iterations. The RMS of the pairs stays near 5 mm even at the true pose: the model is sampled every few millimetres. The initial guess turns the true pose about the vertical through the object frame and shifts it on the table.</p>
 </details>

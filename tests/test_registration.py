@@ -52,7 +52,7 @@ class ClosedForm(unittest.TestCase):
 
     def test_d_avoids_a_reflection(self):
         """A mirrored scene: U V^T is the mirror (det -1, zero cost); D gives the best rotation,
-        whose cost is higher by 4 sigma_3 (slide 45: tr(Sigma Q) loses 2 sigma_3)."""
+        whose cost is higher by 4 sigma_3 (the derivation, now a separate slide: tr(Sigma Q) loses 2 sigma_3)."""
         m = RNG.normal(size=(15, 3))
         mirror = np.diag([1.0, 1.0, -1.0])
         s = m @ mirror.T @ exp_so3([0.3, -0.2, 0.5]).T

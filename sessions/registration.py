@@ -1,5 +1,5 @@
 """
-Lecture 3, demo 2 - Point-cloud registration with known correspondences (slides 39-45).
+Lecture 3, demo 2 - Point-cloud registration with known correspondences (slides 39-44).
 =======================================================================================
 
 Model points m_i (object frame) and scene points s_i = T_obj m_i + noise,

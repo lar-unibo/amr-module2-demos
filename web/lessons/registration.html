@@ -2,6 +2,7 @@
     <p class="lesson-kicker">The problem</p>
     <p>A known object, an unknown pose. The <b>model points</b> <span class="tex">m_i</span> are sampled on the CAD model, in the object frame (red, around the origin). The <b>scene points</b> <span class="tex">s_i</span> are measured, in the world frame (blue). Here the correspondences are <b>known</b>: <span class="tex">m_i</span> and <span class="tex">s_i</span> are the same physical point (dashed pairs):</p>
     <div class="tex-block">T_{obj}\,m_i = s_i,\qquad i=1,\ldots,N.</div>
+    <p>The transform that aligns the model with the scene <b>is the object pose</b> <span class="tex">T_{obj}</span>. A grasp defined once on the model, <span class="tex">{}^{obj}T_{grasp}</span>, then follows: <span class="tex">{}^{N}T_{grasp}=T_{obj}\,{}^{obj}T_{grasp}</span>.</p>
     <p>Each pair gives 3 equations. Without noise, 3 non-collinear pairs fix the 6 unknowns of <span class="tex">T_{obj}</span>. With noise the equations cannot all hold, so we solve them in the least-squares sense:</p>
     <div class="tex-block">\min_{R\in SO(3),\,t}\;\sum_{i=1}^{N}\lVert R\,m_i+t-s_i\rVert^2 .</div>
     <p><b>Try:</b> press <em>3 pairs</em>: three exact pairs, and the pose is recovered to machine precision.</p>
@@ -22,7 +23,7 @@
 </section>
 
 <section class="lesson-block">
-    <p class="lesson-kicker">Why D: the derivation</p>
+    <p class="lesson-kicker">Why D: the derivation (separate slide)</p>
     <p>Expanding the cost, only one term depends on <span class="tex">R</span>:</p>
     <div class="tex-block">\sum_i\lVert\tilde s_i-R\tilde m_i\rVert^2=\sum_i\lVert\tilde s_i\rVert^2+\sum_i\lVert\tilde m_i\rVert^2-2\,\mathrm{tr}(RM^T),</div>
     <p>and <span class="tex">\mathrm{tr}(RM^T)=\mathrm{tr}(\Sigma Q)</span> with <span class="tex">Q=U^TRV</span> orthogonal. Its maximum is at <span class="tex">Q=I</span>, that is <span class="tex">R=UV^T</span>. But if <span class="tex">\det(UV^T)=-1</span>, that <span class="tex">R</span> is a <b>reflection</b>. The best <span class="tex">Q</span> with the right determinant is <span class="tex">D</span>: it flips the smallest singular value <span class="tex">\sigma_3</span> and raises the cost by <span class="tex">4\sigma_3</span>.</p>
@@ -32,10 +33,10 @@
 <section class="lesson-block">
     <p class="lesson-kicker">Wrong pairs</p>
     <p>Least squares trusts every pair. A few wrong correspondences (orange) pull the whole estimate.</p>
-    <p><b>Try:</b> <em>wrong pairs</em> swaps 4 of the 30 pairs: the residual jumps from 3 to 25 mm and the rotation error quadruples. Real correspondences come from matching, so outliers are common. This is why the next steps reject pairs, and why RANSAC fits many 3-pair subsets and keeps the one with the most inliers (slide 46).</p>
+    <p><b>Try:</b> <em>wrong pairs</em> swaps 4 of the 30 pairs: the residual jumps from 3 to 25 mm and the rotation error quadruples. Real correspondences come from matching, so outliers are common. This is why the next steps reject pairs, and why RANSAC fits many 3-pair subsets and keeps the one with the most inliers (slide 45).</p>
 </section>
 
 <details>
     <summary>Slides and simulation</summary>
-    <p>Lecture 3, slides 39–45 (Arun, Huang and Blostein 1987; Umeyama 1991). The model points are sampled on the surface of an L-shaped bracket, 16 × 10 × 12 cm, or of a 2 mm thick L-shaped plate. The scene points are the same points moved by the true pose, with Gaussian noise of the given σ on each coordinate. Wrong pairs exchange scene points cyclically among randomly chosen pairs. <em>new noise</em> draws another sample. Here the world frame is the camera frame (<span class="tex">T_{cam}=I</span>), so <span class="tex">s_i=s_i^c</span>.</p>
+    <p>Lecture 3, slides 39–44; the derivation of <span class="tex">D</span> is on a separate slide (Arun, Huang and Blostein 1987; Umeyama 1991). The model points are sampled on the surface of an L-shaped bracket, 16 × 10 × 12 cm, or of a 2 mm thick L-shaped plate. The scene points are the same points moved by the true pose, with Gaussian noise of the given σ on each coordinate. Wrong pairs exchange scene points cyclically among randomly chosen pairs. <em>new noise</em> draws another sample. Here the world frame is the camera frame (<span class="tex">T_{cam}=I</span>), so <span class="tex">s_i=s_i^c</span>.</p>
 </details>

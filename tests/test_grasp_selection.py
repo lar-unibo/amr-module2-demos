@@ -1,4 +1,4 @@
-"""Lecture 3, slides 52-58 and 61: depth scans, local PCA, antipodal grasps, and the grasp-selection demo."""
+"""Lecture 3, slides 51-57 and 60: depth scans, local PCA, antipodal grasps, and the grasp-selection demo."""
 from __future__ import annotations
 
 import json

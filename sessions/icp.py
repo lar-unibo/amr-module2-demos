@@ -1,5 +1,5 @@
 """
-Lecture 3, demo 3 - ICP: registration without known correspondences (slides 46-51).
+Lecture 3, demo 3 - ICP: registration without known correspondences (slides 45-50).
 ===================================================================================
 
 A known object (an L-shaped bracket, model points m_i sampled on its CAD

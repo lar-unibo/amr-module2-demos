@@ -122,21 +122,21 @@ _ENTRIES = [
      "summary": "Align model points with noisy scene points in closed form: centroids, "
                 "cross-covariance, SVD, and the correction that keeps R a rotation.",
      "concepts": ["$M=\\sum_i\\tilde s_i\\tilde m_i^T$", "$R^*=UDV^T$", "$\\det R=+1$"],
-     "slides": "39-45",
+     "slides": "39-44",
      "session": "registration:RegistrationSession"},
     {"id": "icp", "lecture": "grasping", "number": 3,
      "title": "ICP: registration without correspondences",
      "summary": "Estimate the pose of a known object from a partial, noisy depth view: closest "
                 "points and closed-form alignment, iterated. Local minima, rejection, point-to-plane.",
      "concepts": ["closest point", "local minimum", "point-to-plane"],
-     "slides": "46-51",
+     "slides": "45-50",
      "session": "icp:ICPSession"},
     {"id": "grasp-selection", "lecture": "grasping", "number": 4,
      "title": "Grasp selection from point clouds",
      "summary": "Estimate normals and curvature by local PCA, look for antipodal pairs inside the "
                 "friction cones, score the candidates, and place the pregrasp pose.",
      "concepts": ["local PCA", "$\\sigma_i=\\lambda_0/\\sum\\lambda$", "antipodal"],
-     "slides": "52-58, 61",
+     "slides": "51-57, 60",
      "session": "grasp_selection:GraspSelectionSession"},
 ]
 
