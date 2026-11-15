@@ -1,0 +1,38 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">Correspondences are unknown</p>
+    <p>A depth camera sees the bracket on the table. Each measured pixel becomes a point <span class="tex">s_j^c=d\,K^{-1}[u\;v\;1]^T</span>, and with the known camera pose <span class="tex">s_j=T_{cam}\,s_j^c</span> (blue). Only the side facing the camera is measured; grazing surfaces give no depth (grey pixels in the depth image). Nobody tells us which model point <span class="tex">m_i</span> each <span class="tex">s_j</span> is.</p>
+    <p><b>ICP</b> starts from an initial guess of <span class="tex">T_{obj}</span> and alternates two steps (slide 47):</p>
+    <ol class="missions">
+        <li><b>correspondences</b>: for each scene point, the closest model point <span class="tex">m_{c(j)}</span>, with the model at the current pose (red lines);</li>
+        <li><b>alignment</b>: <span class="tex">(R,t)</span> in closed form from the pairs, as with known correspondences;</li>
+    </ol>
+    <p>until the error stops changing:</p>
+    <div class="tex-block">E=\sum_j\lVert R\,m_{c(j)}+t-s_j\rVert^2 .</div>
+    <p><b>Try:</b> press <em>good guess</em> (10° and 1.8 cm off) and watch the replay. The pairs are wrong at first, but each alignment improves them. After 26 iterations the pose is within 0.3° and 1 mm.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">ICP is local</p>
+    <p>ICP only goes downhill from where it starts. A poor guess leads to a <b>local minimum</b>: a wrong pose where the closest points no longer pull the model anywhere.</p>
+    <p><b>Try:</b> press <em>bad guess</em> (the bracket turned by 90°). ICP converges in 25 iterations to a pose 93° away. Its RMS of 19.7 mm is much higher than the 4.8 mm at the true pose, but ICP cannot know that. Move the <em>rotation error</em> slider to see how far the good basin reaches: from about −80° to +100° here. In practice a global, coarse method gives the guess first: markers, the previous frame, or RANSAC on feature matches. ICP then refines it.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Outliers and rejection</p>
+    <p>Real depth images contain stray measurements. Each one is paired with some model point and pulls the alignment towards it.</p>
+    <p><b>Try:</b> <em>outliers</em> adds 120 stray depths: ICP converges 6° and 7 mm off. <em>outliers + rejection</em> drops every pair longer than 1.5 cm before the alignment (dashed grey lines), and the error is back to 0.3°. Rejecting the worst 15% works too. A tight threshold needs a good initial guess, otherwise it rejects the right pairs as well.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Point-to-plane</p>
+    <p>Point-to-point pairs a scene point with a <em>sampled</em> model point, so on flat faces the two clouds keep tugging sideways and many iterations are spent. Point-to-plane counts only the distance along the scene normal <span class="tex">n_j</span>, estimated by local PCA:</p>
+    <div class="tex-block">E=\sum_j\big((R\,m_{c(j)}+t-s_j)\cdot n_j\big)^2 .</div>
+    <p>There is no closed form. For a small rotation <span class="tex">R\approx I+[\omega]_\times</span> it becomes a linear least-squares problem in <span class="tex">(\omega,t)</span> at every iteration.</p>
+    <p><b>Try:</b> <em>point-to-plane</em>, from the same guess: 14 iterations instead of 26. It slides the faces onto each other only if the camera sees faces in enough directions. Here it sees the top and two sides.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 3, slides 37 and 46–51 (Besl and McKay 1992; Chen and Medioni 1992; Rusinkiewicz and Levoy 2001). The bracket is 16 × 10 × 12 cm, with 1000 model points on its surface. The depth camera is 80 × 60 pixels with <span class="tex">f=95</span> pixels, about 50 cm from the object. One ray per pixel finds the first surface. Depths have Gaussian noise, and rays meeting a surface at more than 83° from its normal are dropped. Outliers are random depths at random pixels around the object. The object is assumed segmented from the table.</p>
+    <p>Closest points are found by brute force (no k-d tree). The normals use the 10 nearest scene points. ICP stops when <span class="tex">E</span> changes by less than <span class="tex">10^{-4}</span> (relative), or the pose moves by less than 0.02° and 0.02 mm, or after 60 iterations. The RMS of the pairs stays near 5 mm even at the true pose: the model is sampled every few millimetres. The initial guess turns the true pose about the vertical through the object frame and shifts it on the table.</p>
+</details>

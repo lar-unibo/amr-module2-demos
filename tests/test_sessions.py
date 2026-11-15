@@ -26,7 +26,7 @@ class Runtime(unittest.TestCase):
 
     def test_catalog_has_every_lecture(self):
         data = catalog()
-        self.assertEqual([lec["number"] for lec in data["lectures"]], [1, 2])
+        self.assertEqual([lec["number"] for lec in data["lectures"]], [1, 2, 3])
         json.dumps(data)
 
 

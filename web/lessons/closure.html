@@ -1,0 +1,39 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">The opening question</p>
+    <p>The fingers are fixed and there is <b>no friction</b>: which grasps prevent <b>any</b> motion of the object? The buttons <b>(a)</b>, <b>(b)</b>, <b>(c)</b> load the three grasps of the slide. Drag a finger along the boundary to make your own.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">The grasp matrix</p>
+    <p>A contact at <span class="tex">c_i</span>, with the normal <span class="tex">n_i</span> pointing inside the object, pushes with a force along <span class="tex">n_i</span>. On the object this is the wrench <span class="tex">[\,n_i;\;(c_i-p_B)\times n_i\,]</span>: one column of the grasp matrix</p>
+    <div class="tex-block">G=\tilde G H^T\in\R^{3\times n_l},\qquad w+G\lambda=0.</div>
+    <p>In the plane, wrenches have three components <span class="tex">[f_x,\,f_y,\,m]</span>. A frictionless contact (PwoF) transmits one of them, a hard finger (HF) two: <span class="tex">n_l=n_c</span> or <span class="tex">2n_c</span> columns.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Form closure (first order)</p>
+    <p><span class="tex">G^T\nu_B</span> gives the normal velocities at the contacts; a negative one means penetration. The object is immobilized if no motion avoids every finger:</p>
+    <div class="tex-block">G^T\nu_B\geq 0\;\Longrightarrow\;\nu_B=0.</div>
+    <p>Equivalently, the columns of <span class="tex">G</span> <b>positively span</b> the wrench space: the origin lies inside their convex hull (right). In the plane this needs <span class="tex">n_c\geq n_v+1=4</span> contacts.</p>
+    <p><b>Try:</b> grasp (a) passes. Set <em>fingers</em> to 3: the origin leaves the hull, and the dashed outlines show a motion that leaves a finger. Grasp (c) fails: the object slides sideways or turns.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Grasp (b): the curvature</p>
+    <p>Two contacts are not enough for the first-order test, and it fails for (b): sliding up and down and turning keep both normal velocities at zero. But on the hourglass every such motion <b>pushes into a finger</b>, because the waist is narrower than the rest. The object is held at second order, by the curvature the first-order test cannot see.</p>
+    <p><b>Try:</b> move the <em>side curvature</em> to 0. The box slides between the fingers. Make it negative (a barrel) and the object escapes.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Force closure</p>
+    <p>With friction (HF) the contact force can lean inside the <b>friction cone</b> <span class="tex">|f_t|\leq\mu f_n</span>. In the plane the cone is exactly the two edges <span class="tex">f_n[1,\pm\mu]</span>. The grasp is force closure if it can balance any external wrench:</p>
+    <div class="tex-block">\forall\,w\;\;\exists\,\lambda\in\mathcal F:\quad G\lambda=-w,</div>
+    <p>that is, <span class="tex">\mathrm{rank}\,G=3</span> and an internal force <span class="tex">\lambda_{\text{int}}\in\mathcal N(G)</span> lies strictly inside the cones (orange arrows). The test is the same hull test, applied to the cone edges.</p>
+    <p><b>Try:</b> <em>pinch</em> holds for any <span class="tex">\mu&gt;0</span>, because the line between the fingers is along both normals. In <em>tilted pinch</em> that line is 34.2° away from the normals. It fails until the cone half-angle <span class="tex">\arctan\mu</span> is wider, at <span class="tex">\mu&gt;0.68</span>. When it fails, the red wrench at the centre is one the fingers cannot balance. Load (b) or (c) and switch to friction: two hard fingers are enough in the plane.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 3, slides 8 and 23–30, in the plane: twists and wrenches have 3 components, so first-order form closure needs 4 contacts (7 in space), and two hard fingers can be force closure (in space: two soft fingers, or three hard ones). Contacts are points; the disks only show where the fingers are. Moments are divided by a length <span class="tex">\rho</span>, the mean distance of the boundary from the centre, before the hull is built. This does not change the tests. The <em>margin</em> is the distance of the origin from the boundary of the hull, in these units.</p>
+    <p>The hull of the primitive wrenches (at most 12 points) is computed exactly, by trying every triple of points as a face. When all first-order free motions are tangential, the object is moved along each of them by up to 0.2 (the object is 2 tall), and the finger clearances <span class="tex">g</span> are measured on the true shape. At second order the object may also shift by a small correction <span class="tex">a</span>, which uses the room gained at one finger to free the others. A motion escapes if some <span class="tex">a</span> gives <span class="tex">G^Ta+g\geq 0</span>; the object counts as held if none does, within <span class="tex">2\cdot10^{-4}</span>. This feasibility problem, and the internal force, are solved by non-negative least squares.</p>
+</details>

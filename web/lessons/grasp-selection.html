@@ -1,0 +1,54 @@
+<section class="lesson-block">
+    <p class="lesson-kicker">A novel object</p>
+    <p>There is no model, so no grasp planned in advance: the grasp is chosen on the <b>point cloud</b> itself. The workspace shows a cross-section of a table scene. Depth cameras above it measure points along their rays (top right). The points on the table are removed, which leaves the object's cloud (left). The pipeline of the slide:</p>
+    <p><b>normals and curvature</b> → <b>antipodal candidates</b> → <b>evaluate and select</b> → grasp and pregrasp pose.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Normals by local PCA</p>
+    <p>The <span class="tex">k</span> nearest points <span class="tex">p_j</span> of a point <span class="tex">p_i</span>, with centroid <span class="tex">\bar p</span>, give</p>
+    <div class="tex-block">\mathrm{Cov}_i=\frac1k\sum_{j=1}^{k}(p_j-\bar p)(p_j-\bar p)^T,</div>
+    <p>with eigenvalues <span class="tex">\lambda_0\leq\lambda_1</span>. The neighbours spread along the surface, so <span class="tex">v_0</span>, the direction of <b>smallest</b> spread, is the normal. Drag the ring along the cloud: the card on the right shows its neighbours and the ellipse of <span class="tex">\mathrm{Cov}_i</span>.</p>
+    <p><b>Try:</b> set the depth noise to 1.5 mm. With <span class="tex">k=3</span> the normals are noisy (median error 21°, against 4° with <span class="tex">k=15</span>). With <span class="tex">k=40</span> the neighbourhoods reach around the corners and bend the normals of the sides. The antipodal pairs halve, and the best grasp is about 5° off.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Which way is out?</p>
+    <p>PCA gives the normal only up to its sign, <span class="tex">\pm v_0</span>. The camera sees the object from outside, so each normal is flipped towards the camera that measured the point:</p>
+    <div class="tex-block">n_i\cdot(p_{cam}-p_i)&gt;0.</div>
+    <p><b>Try:</b> untick <em>orient the normals</em>. About half of them now point inside the object, and the antipodal pairs drop from 439 to 72.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Surface variation</p>
+    <p>The same eigenvalues measure how far the neighbours are from a straight line (a plane, in 3-D):</p>
+    <div class="tex-block">\sigma_i=\frac{\lambda_0}{\lambda_0+\lambda_1}\in\left[0,\tfrac12\right].</div>
+    <p>The colours of the cloud show it. On the sides of the box <span class="tex">\sigma_i&lt;0.01</span>, at its corners about 0.17, on the rim of the cup about 0.2. The thin walls of the cup also look like edges, because the neighbours of a point include the other face of the wall, 6 mm away.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Antipodal grasps</p>
+    <p>A parallel-jaw gripper closes along <span class="tex">u=(c_2-c_1)/\|c_2-c_1\|</span>. The pair is accepted if <span class="tex">u</span> lies inside both friction cones (the outward normal <span class="tex">n_i</span> here; the contact frames of Part 1 use the inward one, <span class="tex">-n_i</span>):</p>
+    <div class="tex-block">\angle(u,-n_1)&lt;\arctan\mu,\qquad \angle(-u,-n_2)&lt;\arctan\mu,</div>
+    <p>and if it fits: <span class="tex">\|c_2-c_1\|&lt;</span> the maximum opening. For two hard fingers in the plane this is exactly force closure (the pinch of demo 01).</p>
+    <p><b>Try:</b> <span class="tex">\mu=0.1,\,0.2,\,0.4,\,0.8</span> accept 109, 226, 439 and 823 pairs. A maximum opening of 5 cm finds no grasp on the 6 cm box.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Partial views</p>
+    <p>A camera sees only the side of the object facing it. <b>Try:</b> switch to <em>one</em> camera. The right side of the box is not measured, and neither is the bottom: no pair passes the test, for any of the three objects. Two cameras (fusion) see both sides.</p>
+</section>
+
+<section class="lesson-block">
+    <p class="lesson-kicker">Score, select, approach</p>
+    <p>For each antipodal pair the gripper approaches along <span class="tex">z_g</span>, perpendicular to <span class="tex">u</span>. Poses whose fingers, palm or wrist hit a measured point or the table are discarded, along the whole straight approach. The others get a cost; the cheapest one is drawn:</p>
+    <div class="tex-block">C=C_{\text{antipodal}}+\alpha_2\,C_{\text{reach}}+\alpha_3\,C_{\text{clear}}.</div>
+    <p>The <b>pregrasp</b> has the same orientation, <span class="tex">d</span> back along <span class="tex">z_g</span>: <span class="tex">{}^NT_{pre}={}^NT_{grasp}\begin{bmatrix}I_3&amp;-d\,e_z\\0&amp;1\end{bmatrix}</span>. From the pregrasp, a short straight line reaches the grasp.</p>
+    <p><b>Try:</b> on the cup the best grasp takes one wall at the rim (0.65 cm across). Open the gripper to 12 cm: the whole cup, 9 cm across, becomes cheaper. Click the rows of the table to see the other candidates.</p>
+</section>
+
+<details>
+    <summary>Slides and simulation</summary>
+    <p>Lecture 3, slides 52–58 and 61, on a 2-D cross-section of the scene (x horizontal, z up, table at z = 0). In 2-D the covariance has two eigenvalues, so <span class="tex">\sigma_i\in[0,\frac12]</span> (<span class="tex">[0,\frac13]</span> in 3-D). Each camera has one row of 320 pixels and a 44° field of view, at (±16 cm, 42 cm). A pixel <span class="tex">u</span> with depth <span class="tex">d</span> gives <span class="tex">p=d\,K^{-1}[u,\,1]^T</span>, with Gaussian noise on <span class="tex">d</span>. There is no measurement where a ray meets the surface at a grazing angle (<span class="tex">|\cos|&lt;0.15</span>), and 4% of the pixels drop out at random. Without orientation the sign of <span class="tex">v_0</span> is drawn at random, as an eigen-solver gives no rule.</p>
+    <p>Every pair of points is tested; at most 500 of the most antipodal pairs are evaluated, each with the approaches from above or the side. The gripper (fingers 4.5 cm × 0.8 cm, palm as wide as the maximum opening) opens 2 cm wider than the pair. Space that no camera measured counts as free. Cost terms, each in [0, 1]: <span class="tex">C_{\text{antipodal}}=\max(\theta_1,\theta_2)/\arctan\mu</span>, <span class="tex">C_{\text{reach}}</span> = angle of <span class="tex">z_g</span> from straight down / 90°, and <span class="tex">C_{\text{clear}}=1-</span> clearance / 1 cm. The table lists the five cheapest distinct poses.</p>
+</details>

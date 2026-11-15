@@ -17,6 +17,10 @@ All computations run in Python, **directly in the browser**, with [Pyodide](http
 | | 05 Depth: guess or estimate | 33–34 |
 | | 06 PBVS vs IBVS, with calibration errors | 35 |
 | | 07 Stability of IBVS | 38–39 |
+| 3 · Grasping | 01 Form and force closure (planar grasp matrix, positive span, curvature, friction cones) | 8, 23–30 |
+| | 02 Registration with known correspondences (centroids, cross-covariance, SVD, the correction D) | 39–45 |
+| | 03 ICP: registration without correspondences (local minima, rejection, point-to-plane) | 46–51 |
+| | 04 Grasp selection from point clouds (depth scans, normals and curvature by local PCA, antipodal grasps, pregrasp) | 52–58, 61 |
 
 The demos of a lecture follow the order of its slides.
 
@@ -52,7 +56,7 @@ Every demo has a stable address, `demo.html?id=<demo>`. Options in the address:
 
 | Option | Effect |
 |---|---|
-| `&preset=<name>` | open the demo with a start pose or motion preset, e.g. `demo.html?id=interaction&preset=null`, `demo.html?id=ibvs&preset=rot_z_pi` |
+| `&preset=<name>` | open the demo with a start pose or motion preset, e.g. `demo.html?id=interaction&preset=null`, `demo.html?id=ibvs&preset=rot_z_pi`, `demo.html?id=closure&preset=b` |
 
 The **◧ Hide lesson** button of a demo hides the explanation, so the workspace takes the full width (the choice is remembered in the browser). The **⋯** menu copies the address of the current view, saves the canvases as a PNG figure, and records them as a video. The site opens in the light theme; ◐ switches to the dark one.
 
@@ -68,6 +72,10 @@ course/                 Python package (numpy only): the computations, in the no
     calibration.py      Zhang's method: homographies, intrinsics, poses, radial distortion, refinement (no demo at the moment)
     handeye.py          hand-eye calibration, A X = X B (Park and Martin), degeneracy checks (no demo at the moment)
     stereo.py           normal stereo, triangulation, depth resolution, back-projection
+    grasp.py            planar grasps: grasp matrix G = G~ H^T, positive span (form and force closure), NNLS, shapes
+    registration.py     closed-form registration (M = sum s~ m~^T, R* = U D V^T), nearest neighbours, PCA normals, ICP
+    pointcloud.py       object made of boxes, surface sampling, simulated depth camera (ray casting, noise, dropouts)
+    grasp_selection.py  2-D depth scans, normals and surface variation by local PCA, antipodal pairs, gripper collisions and cost
 sessions/               the Python state of each demo page (runs in the browser)
     catalog.py          course, lectures, and demos, in order (edit COURSE and LECTURES here)
     runtime.py          entry points called by the page: start(demo), call(session, action)
@@ -75,6 +83,7 @@ sessions/               the Python state of each demo page (runs in the browser)
     projection.py, pixels.py, distortion.py, stereo.py
     servo_common.py     scene and start poses shared by the closed-loop demos
     pbvs.py, interaction.py, four_points.py, ibvs.py, depth.py, comparison.py, stability.py
+    closure.py, registration.py, icp.py, grasp_selection.py
 web/                    static sources of the site
     index.html, demo.html, css/, lessons/<demo>.html, js/demos/<demo>.js
     js/lib/             UI toolkit, plots, 3-D and plane views, Python worker (pyworker.js, api.js)
@@ -95,7 +104,7 @@ How a demo runs: the page starts a web worker (`web/js/lib/pyworker.js`) that lo
 4. **Page**: `web/js/demos/<id>.js` exports `mount({workspace, session, state, options})`; `web/lessons/<id>.html` holds the lesson.
 5. **Tests** in `tests/test_sessions.py`; `tests/test_site.py` checks that the page files exist.
 
-Conventions: the notation and signs of each lecture's slides. Lecture 1: x = f X / Z on the image plane, u = x / rho_w + u0, extrinsics {}^C T_0, distortion D = (k1, k2, k3, p1, p2) on normalized coordinates. Lecture 2: error `e = s - s*`, control law `v_c = -lambda L^+ e`, velocities in the camera frame, linear part first. Camera frame: x right, y down, z along the optical axis. Figures on the site are drawn by the demos, not copied from papers.
+Conventions: the notation and signs of each lecture's slides. Lecture 1: x = f X / Z on the image plane, u = x / rho_w + u0, extrinsics {}^C T_0, distortion D = (k1, k2, k3, p1, p2) on normalized coordinates. Lecture 2: error `e = s - s*`, control law `v_c = -lambda L^+ e`, velocities in the camera frame, linear part first. Lecture 3: twists `nu = [v; omega]` and wrenches `lambda = [f; m]` (planar: 3 components), contact frame {C_i} with x-axis the normal n_i pointing inside the object, `G = G~ H^T`, `w + G lambda = 0`; point-cloud normals from PCA point outward (towards the camera). Camera frame: x right, y down, z along the optical axis. Figures on the site are drawn by the demos, not copied from papers.
 
 ## Updating Pyodide
 

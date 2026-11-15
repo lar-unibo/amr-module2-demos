@@ -53,6 +53,37 @@ export class PlaneView {
         c.addEventListener('pointercancel', end);
     }
 
+    // Drag one of several points: onDrag(index, [x, y]) for the point nearest to
+    // the pointer when it went down (within radius pixels); onEnd(index) on release.
+    enableDragMany({ getPoints, onDrag, onEnd, radius = 16 }) {
+        const c = this.canvas;
+        let active = -1;
+        const local = (e) => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+        const nearest = ([mx, my]) => {
+            let best = -1, bestD = radius;
+            getPoints().forEach((q, i) => {
+                const [sx, sy] = this.toScreen(q);
+                const d = Math.hypot(sx - mx, sy - my);
+                if (d <= bestD) { best = i; bestD = d; }
+            });
+            return best;
+        };
+        c.addEventListener('pointerdown', (e) => {
+            active = nearest(local(e));
+            if (active < 0) return;
+            c.setPointerCapture(e.pointerId);
+            e.preventDefault();
+        });
+        c.addEventListener('pointermove', (e) => {
+            const m = local(e);
+            c.style.cursor = active >= 0 ? 'grabbing' : (nearest(m) >= 0 ? 'grab' : '');
+            if (active >= 0) onDrag(active, this.toWorld(m));
+        });
+        const end = () => { if (active >= 0) onEnd?.(active); active = -1; };
+        c.addEventListener('pointerup', end);
+        c.addEventListener('pointercancel', end);
+    }
+
     draw(paint) {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const w = this.canvas.clientWidth, h = this.canvas.clientHeight;
@@ -116,6 +147,17 @@ class PlanePainter {
         }
         ctx.stroke();
         ctx.setLineDash([]);
+    }
+
+    // A closed polygon, filled and/or outlined.
+    polygon(points, { fill, color, width = 1.4, dash } = {}) {
+        if (!points || points.length < 3) return;
+        const { ctx } = this;
+        ctx.beginPath();
+        points.forEach((q, i) => { const [x, y] = this.view.toScreen(q); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+        ctx.closePath();
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+        if (color) { this._stroke(color, width, dash); ctx.stroke(); ctx.setLineDash([]); }
     }
 
     point(q, { r = 5, color = this.p.feature, ring = this.p.featureRing } = {}) {

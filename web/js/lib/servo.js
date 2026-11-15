@@ -31,12 +31,14 @@ export function borderRatio(frame, fov) {
 }
 
 // ------------------------------------------------------------------ playback
-// Play / pause, a time slider, and the playback speed. onFrame(k) draws step k.
-export function playback({ onFrame, label = 't' }) {
+// Play / pause, a time slider, and the playback speed. onFrame(k) draws step k;
+// format(k, n), if given, writes the readout instead of the time (e.g. iterations).
+export function playback({ onFrame, label = 't', format = null }) {
     let n = 1, k = 0, playing = false, last = 0, speed = 1, raf = 0, dt = 0.04;
     const play = button('▶ Play', () => (playing ? stop() : start()), { primary: true });
     const slider = h('input', { type: 'range', min: 0, max: 0, step: 1, value: 0, class: 'time-slider', 'aria-label': 'time' });
-    const clock = h('output', { class: 'time-readout' }, `${label} = 0.00 s`);
+    const readout = (i) => (format ? format(i, n) : `${label} = ${(i * dt).toFixed(2)} s`);
+    const clock = h('output', { class: 'time-readout' }, readout(0));
     const speeds = segmented({ options: [{ value: 0.5, label: '½×' }, { value: 1, label: '1×' }, { value: 3, label: '3×' }], value: 1, onChange: (v) => { speed = v; } });
     slider.addEventListener('input', () => { stop(); set(Number(slider.value)); });
     const el = h('div', { class: 'playback' }, play, slider, clock, speeds.el);
@@ -44,7 +46,7 @@ export function playback({ onFrame, label = 't' }) {
     function set(index) {
         k = Math.max(0, Math.min(n - 1, index));
         slider.value = String(k);
-        clock.textContent = `${label} = ${(k * dt).toFixed(2)} s`;
+        clock.textContent = readout(k);
         onFrame(k);
     }
     function start() {
