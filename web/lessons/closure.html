@@ -7,7 +7,7 @@
     <p class="lesson-kicker">The grasp matrix</p>
     <p>A contact at <span class="tex">c_i</span>, with the normal <span class="tex">n_i</span> pointing inside the object, pushes with a force along <span class="tex">n_i</span>. On the object this is the wrench <span class="tex">[\,n_i;\;(c_i-p_B)\times n_i\,]</span>: one column of the grasp matrix</p>
     <div class="tex-block">G=\tilde G H^T\in\R^{3\times n_l}.</div>
-    <p>In the plane, wrenches have three components <span class="tex">[f_x,\,f_y,\,m]</span>. A frictionless contact (PwoF) transmits one of them, a hard finger (HF) two: <span class="tex">n_l=n_c</span> or <span class="tex">2n_c</span> columns. Either way the finger can only push: <span class="tex">f_n\geq 0</span>.</p>
+    <p>In the plane, wrenches have three components <span class="tex">[f_x,\,f_y,\,m]</span>. A frictionless contact (PwoF) transmits only the normal force <span class="tex">f_n</span>, a hard finger (HF) also the tangential force <span class="tex">f_t</span>: <span class="tex">n_l=n_c</span> or <span class="tex">2n_c</span> columns. Either way the finger can only push: <span class="tex">f_n\geq 0</span>.</p>
 </section>
 
 <section class="lesson-block">
@@ -35,7 +35,7 @@
 
 <section class="lesson-block">
     <p class="lesson-kicker">Force closure</p>
-    <p><b>Force closure</b>: with friction, the fingers can balance any external wrench, squeezing as needed. With hard fingers (HF) the contact force can lean inside the <b>friction cone</b> <span class="tex">|f_t|\leq\mu f_n</span>; in the plane the cone is exactly the two edges <span class="tex">f_n[1,\pm\mu]</span>.</p>
+    <p><b>Force closure</b>: with friction, the fingers can balance any external wrench, squeezing as needed. With hard fingers (HF) the contact force can lean inside the <b>friction cone</b> <span class="tex">|f_t|\leq\mu f_n</span>; in the plane the cone is spanned exactly by its two edges <span class="tex">f_n[1,\pm\mu]</span>.</p>
     <div class="tex-block">\forall\,w\;\;\exists\,\lambda\in\mathcal F:\quad G\lambda=-w</div>
     <p>The test: <span class="tex">\mathrm{rank}\,G=3</span>, and a squeeze <span class="tex">\lambda_{\text{int}}\in\mathcal N(G)</span> lies strictly inside the cones (blue). Then, whatever wrench comes, squeezing harder brings every contact force into its cone. It is the same hull test, applied to the cone edges. Form closure holds by geometry, force closure by squeezing and friction.</p>
     <p><b>Try:</b> <em>pinch</em> holds for any <span class="tex">\mu&gt;0</span>, because the line between the fingers is along both normals. In <em>tilted pinch</em> that line is 34.2° away from the normals. It fails until the cone half-angle <span class="tex">\arctan\mu</span> is wider, at <span class="tex">\mu&gt;0.68</span>. When it fails, the red wrench at the centre is one the fingers cannot balance. With the weight on, just above the limit (<span class="tex">\mu=0.69</span>) holding it takes a squeeze of 37 mg; at <span class="tex">\mu=1</span>, 1.2 mg. Load (b) or (c) and switch to friction: two hard fingers are enough in the plane. In space the object could spin about the line between them, unless the fingers are soft.</p>

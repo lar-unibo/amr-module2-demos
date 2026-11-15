@@ -113,8 +113,9 @@ _ENTRIES = [
     {"id": "closure", "lecture": "grasping", "number": 1,
      "title": "Form and force closure",
      "summary": "Place fingers on a planar object and test whether the grasp prevents any motion: "
-                "without friction (form closure) or with friction cones (force closure).",
-     "concepts": ["$G$", "$G^T\\nu_B\\geq 0\\Rightarrow\\nu_B=0$", "friction cone"],
+                "without friction (form closure) or with friction cones (force closure). "
+                "Add the weight to see how hard the fingers must squeeze.",
+     "concepts": ["$G$", "$w+G\\lambda=0$", "$G^T\\nu_B\\geq 0\\Rightarrow\\nu_B=0$", "friction cone"],
      "slides": "8, 23-30",
      "session": "closure:ClosureSession"},
     {"id": "registration", "lecture": "grasping", "number": 2,

@@ -1,7 +1,7 @@
 <section class="lesson-block">
     <p class="lesson-kicker">Correspondences are unknown</p>
     <p>A depth camera sees the bracket on the table. Each measured pixel becomes a point <span class="tex">s_j^c=d\,K^{-1}[u\;v\;1]^T</span>, and with the known camera pose <span class="tex">s_j=T_{cam}\,s_j^c</span> (blue). Only the side facing the camera is measured; grazing surfaces give no depth (grey pixels in the depth image). Nobody tells us which model point <span class="tex">m_i</span> each <span class="tex">s_j</span> is.</p>
-    <p><b>ICP</b> starts from an initial guess of <span class="tex">T_{obj}</span> and alternates two steps (slide 46):</p>
+    <p><b>ICP</b> starts from an initial guess of <span class="tex">T_{obj}</span> and alternates two steps (slides 45–46):</p>
     <ol class="missions">
         <li><b>correspondences</b>: for each scene point, the closest model point <span class="tex">m_{c(j)}</span>, with the model at the current pose (red lines);</li>
         <li><b>alignment</b>: <span class="tex">(R,t)</span> in closed form from the pairs, as with known correspondences;</li>
@@ -14,7 +14,7 @@
 <section class="lesson-block">
     <p class="lesson-kicker">ICP is local</p>
     <p>ICP only goes downhill from where it starts. A poor guess leads to a <b>local minimum</b>: a wrong pose where the closest points no longer pull the model anywhere.</p>
-    <p><b>Try:</b> press <em>bad guess</em> (the bracket turned by 90°). ICP converges in 25 iterations to a pose 93° away. Its RMS of 19.7 mm is much higher than the 4.8 mm at the true pose, but ICP cannot know that. Move the <em>rotation error</em> slider to see how far the good basin reaches: from about −80° to +100° here. In practice a global, coarse method gives the guess first: markers, the previous frame, or RANSAC on feature matches. ICP then refines it.</p>
+    <p><b>Try:</b> press <em>bad guess</em> (the bracket turned by 90°). ICP converges in 25 iterations to a pose 93° away. Its RMS of 19.7 mm is much higher than the 4.8 mm at the true pose, but ICP cannot know that. Move the <em>rotation error</em> slider to see how far the good basin reaches: from about −80° to +100° here. In practice a good guess comes first: from markers, the previous frame, or RANSAC on feature matches (coarse, global). ICP then refines it (fine, local).</p>
 </section>
 
 <section class="lesson-block">

@@ -1,7 +1,8 @@
 <section class="lesson-block">
     <p class="lesson-kicker">A novel object</p>
     <p>There is no model, so no grasp planned in advance: the grasp is chosen on the <b>point cloud</b> itself. The workspace shows a cross-section of a table scene. Depth cameras above it measure points along their rays (top right). The points on the table are removed, which leaves the object's cloud (left). The pipeline of the slide:</p>
-    <p><b>normals and curvature</b> → <b>antipodal candidates</b> → <b>evaluate and select</b> → grasp and pregrasp pose.</p>
+    <p><b>normals and curvature</b> → <b>candidate grasps</b> → <b>evaluate and select</b> → grasp pose.</p>
+    <p>Here the candidates are the antipodal pairs of the cloud, and the pregrasp follows from the grasp pose.</p>
 </section>
 
 <section class="lesson-block">
@@ -23,7 +24,7 @@
     <p class="lesson-kicker">Surface variation</p>
     <p>The same eigenvalues measure how far the neighbours are from a straight line (a plane, in 3-D):</p>
     <div class="tex-block">\sigma_i=\frac{\lambda_0}{\lambda_0+\lambda_1}\in\left[0,\tfrac12\right].</div>
-    <p>The colours of the cloud show it. On the sides of the box <span class="tex">\sigma_i&lt;0.01</span>, at its corners about 0.17, on the rim of the cup about 0.2. The thin walls of the cup also look like edges, because the neighbours of a point include the other face of the wall, 6 mm away.</p>
+    <p>The colours of the cloud show it. On the sides of the box <span class="tex">\sigma_i&lt;0.01</span>, at its corners about 0.17, on the rim of the cup about 0.25. The thin walls of the cup also look like edges, because the neighbours of a point include the other face of the wall, 6 mm away.</p>
 </section>
 
 <section class="lesson-block">
@@ -42,7 +43,8 @@
 <section class="lesson-block">
     <p class="lesson-kicker">Score, select, approach</p>
     <p>For each antipodal pair the gripper approaches along <span class="tex">z_g</span>, perpendicular to <span class="tex">u</span>. Poses whose fingers, palm or wrist hit a measured point or the table are discarded, along the whole straight approach. The others get a cost; the cheapest one is drawn:</p>
-    <div class="tex-block">C=C_{\text{antipodal}}+\alpha_2\,C_{\text{reach}}+\alpha_3\,C_{\text{clear}}.</div>
+    <div class="tex-block">C=\alpha_1C_{\text{antipodal}}+\alpha_2\,C_{\text{reach}}+\alpha_3\,C_{\text{clear}},\qquad\alpha_1=1.</div>
+    <p><span class="tex">C_{\text{reach}}</span> favours grasps from above. Collisions are not scored, since those poses are already discarded. <span class="tex">C_{\text{clear}}</span> instead rewards room around the fingers, like the "away from the bin walls" of the slide.</p>
     <p>The <b>pregrasp</b> has the same orientation, <span class="tex">d</span> back along <span class="tex">z_g</span>: <span class="tex">{}^NT_{pre}={}^NT_{grasp}\begin{bmatrix}I_3&amp;-d\,e_z\\0&amp;1\end{bmatrix}</span>. From the pregrasp, a short straight line reaches the grasp.</p>
     <p><b>Try:</b> on the cup the best grasp takes one wall at the rim (0.65 cm across). Open the gripper to 12 cm: the whole cup, 9 cm across, becomes cheaper. Click the rows of the table to see the other candidates.</p>
 </section>

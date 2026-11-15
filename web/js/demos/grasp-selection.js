@@ -66,7 +66,7 @@ export async function mount({ workspace, session, state, options }) {
     const d = sl('d', 'pregrasp distance $d$', 2, 15, 0.5, (v) => `${v.toFixed(1)} cm`, 100);
     const aReach = sl('alpha_reach', 'weight $\\alpha_2$: top-down', 0, 2, 0.05, (v) => v.toFixed(2));
     const aClear = sl('alpha_clear', 'weight $\\alpha_3$: clearance', 0, 2, 0.05, (v) => v.toFixed(2));
-    const gripCard = card('Gripper and cost', '$C=C_{\\text{antipodal}}+\\alpha_2C_{\\text{reach}}+\\alpha_3C_{\\text{clear}}$');
+    const gripCard = card('Gripper and cost', '$C=\\alpha_1C_{\\text{antipodal}}+\\alpha_2C_{\\text{reach}}+\\alpha_3C_{\\text{clear}}$, $\\alpha_1=1$');
     gripCard.body.append(h('div', { class: 'slider-group' }, mu.el, opening.el, d.el, aReach.el, aClear.el));
 
     const candCard = card('Candidates', 'click a row · $C_a$ antipodal, $C_r$ reach, $C_c$ clearance');
@@ -241,7 +241,7 @@ export async function mount({ workspace, session, state, options }) {
         if (!S.top.length) {
             candNote.replaceChildren(label(C.antipodal
                 ? 'Every antipodal pair needs a gripper pose that hits the object or the table.'
-                : C.within_opening ? 'No pair of points has both normals inside the friction cones of the other: no antipodal grasp. Is the far side of the object seen?'
+                : C.within_opening ? 'No pair has the line between the contacts inside both friction cones: no antipodal grasp. Is the far side of the object seen?'
                     : 'No two points are closer than the maximum opening.'));
         } else {
             const t = S.top[selected];

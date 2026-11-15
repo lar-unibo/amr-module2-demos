@@ -59,7 +59,7 @@ class LocalPCA(unittest.TestCase):
 
 class AntipodalAndGripper(unittest.TestCase):
 
-    def test_antipodal_test_of_slide_57(self):
+    def test_antipodal_test_of_slide_56(self):
         P = np.array([[-0.03, 0.05], [0.03, 0.05], [0.03, 0.08]])
         N = np.array([[-1.0, 0.0], [1.0, 0.0], [np.cos(0.3), np.sin(0.3)]])
         pairs = antipodal_pairs(P, N, mu=0.4, max_opening=0.085)

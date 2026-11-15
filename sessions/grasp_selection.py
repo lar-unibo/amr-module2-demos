@@ -4,7 +4,7 @@ Lecture 3, demo 4 - Grasp selection from point clouds (slides 51-57, 60).
 
 A cross-section of a table scene with a novel object (box, blob, cup), seen
 by one or two depth cameras above it. The page follows the pipeline of slide
-52: normals and surface variation by local PCA (with a probe that shows the
+51: normals and surface variation by local PCA (with a probe that shows the
 neighbourhood of one point), antipodal pairs inside the friction cones, gripper
 poses checked for collisions along the straight approach, the cost of slide 57,
 and the pregrasp pose of slide 60. Distances in metres.

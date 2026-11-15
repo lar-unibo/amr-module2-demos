@@ -49,7 +49,7 @@ export async function mount({ workspace, session, state, options }) {
     guess.body.append(h('div', { class: 'slider-group' }, yaw0.el, dx0.el, dy0.el, noise.el, outliers.el),
         h('div', { class: 'toolbar' },
             button('good guess', preset('good'), { small: true }),
-            button('bad guess', preset('far'), { small: true, title: 'turned by 120°: a local minimum' }),
+            button('bad guess', preset('far'), { small: true, title: 'turned by 90°: a local minimum' }),
             button('outliers', preset('outliers'), { small: true }),
             button('outliers + rejection', preset('rejection'), { small: true }),
             button('point-to-plane', preset('plane'), { small: true })));
